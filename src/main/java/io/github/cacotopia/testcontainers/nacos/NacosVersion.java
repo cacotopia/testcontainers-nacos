@@ -9,42 +9,42 @@ public enum NacosVersion {
     /**
      * Nacos 2.0 version
      */
-    V2_0("2.0", "Nacos 2.0"),
+    V2_0("v2.0", "Nacos 2.0"),
 
     /**
      * Nacos 2.1 version
      */
-    V2_1("2.1", "Nacos 2.1"),
+    V2_1("v2.1", "Nacos 2.1"),
 
     /**
      * Nacos 2.2 version
      */
-    V2_2("2.2", "Nacos 2.2"),
+    V2_2("v2.2", "Nacos 2.2"),
 
     /**
      * Nacos 2.3 version
      */
-    V2_3("2.3", "Nacos 2.3"),
+    V2_3("v2.3", "Nacos 2.3"),
 
     /**
      * Nacos 2.4 version
      */
-    V2_4("2.4", "Nacos 2.4"),
+    V2_4("v2.4", "Nacos 2.4"),
 
     /**
      * Nacos 2.5 version
      */
-    V2_5("2.5", "Nacos 2.5"),
+    V2_5("v2.5", "Nacos 2.5"),
 
     /**
      * Nacos 3.0 version
      */
-    V3_0("3.0", "Nacos 3.0"),
+    V3_0("v3.0", "Nacos 3.0"),
 
     /**
      * Nacos 3.1 version
      */
-    V3_1("3.1", "Nacos 3.1"),
+    V3_1("v3.1", "Nacos 3.1"),
 
     /**
      * Unknown version
@@ -65,7 +65,7 @@ public enum NacosVersion {
      * Creates a new NacosVersion with the specified version prefix and display name.
      *
      * @param versionPrefix The version prefix
-     * @param displayName The display name
+     * @param displayName   The display name
      */
     NacosVersion(String versionPrefix, String displayName) {
         this.versionPrefix = versionPrefix;
@@ -96,7 +96,7 @@ public enum NacosVersion {
      * @return true if this is a Nacos 3.x version, false otherwise
      */
     public boolean isV3() {
-        return this == V3_0 || this == V3_1 || versionPrefix.startsWith("3.");
+        return this == V3_0 || this == V3_1 || versionPrefix.startsWith("v3.");
     }
 
     /**
@@ -105,7 +105,7 @@ public enum NacosVersion {
      * @return true if this is a Nacos 2.x version, false otherwise
      */
     public boolean isV2() {
-        return versionPrefix.startsWith("2.");
+        return versionPrefix.startsWith("v2.");
     }
 
     /**
@@ -116,7 +116,7 @@ public enum NacosVersion {
      */
     public static NacosVersion fromImageName(String imageName) {
         if (imageName == null || imageName.isEmpty()) {
-            return V2_2; // 默认版本
+            return V2_5; // 默认版本
         }
 
         // 提取版本号部分
@@ -131,9 +131,9 @@ public enum NacosVersion {
         }
 
         // 尝试匹配主版本号
-        if (version.startsWith("3.")) {
+        if (version.startsWith("v3.")) {
             return V3_0;
-        } else if (version.startsWith("2.")) {
+        } else if (version.startsWith("v2.")) {
             return V2_2;
         }
 
@@ -169,7 +169,7 @@ public enum NacosVersion {
      * @return The default Nacos image
      */
     public static String getDefaultImage() {
-        return "nacos/nacos-server:2.2.3";
+        return "nacos/nacos-server:v2.5.2";
     }
 
     /**
@@ -178,7 +178,7 @@ public enum NacosVersion {
      * @return The default NacosVersion
      */
     public static NacosVersion getDefault() {
-        return V2_2;
+        return V2_5;
     }
 
     /**

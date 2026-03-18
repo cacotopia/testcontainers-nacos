@@ -359,10 +359,10 @@ For other frameworks, use the container's `getServiceUrl()`, `getUsername()`, an
 
 ### NacosContainer Constructor Methods
 
-| Method | Description |
-|--------|-------------|
-| `NacosContainer()` | Create with default image `nacos/nacos-server:2.2.3` |
-| `NacosContainer(String dockerImageName)` | Create with custom Docker image |
+| Method | Description                                           |
+|--------|-------------------------------------------------------|
+| `NacosContainer()` | Create with default image `nacos/nacos-server:v2.5.2` |
+| `NacosContainer(String dockerImageName)` | Create with custom Docker image                       |
 
 ### NacosContainer Configuration Methods
 

@@ -30,7 +30,7 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     /**
      * Default Nacos version
      */
-    private static final String NACOS_VERSION = "2.2.3";
+    private static final String NACOS_VERSION = "v2.5.2";
 
     /**
      * Nacos HTTP port

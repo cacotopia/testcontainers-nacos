@@ -16,9 +16,9 @@ class NacosVersionTest {
     @Test
     @DisplayName("应该从镜像名称解析 Nacos 2.2 版本")
     void shouldParseVersion22FromImageName() {
-        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:2.2.3");
+        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:v2.5.2");
 
-        assertThat(version).isEqualTo(NacosVersion.V2_2);
+        assertThat(version).isEqualTo(NacosVersion.V2_5);
         assertThat(version.isV2()).isTrue();
         assertThat(version.isV3()).isFalse();
     }
@@ -26,7 +26,7 @@ class NacosVersionTest {
     @Test
     @DisplayName("应该从镜像名称解析 Nacos 3.0 版本")
     void shouldParseVersion30FromImageName() {
-        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:3.0.0");
+        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:v3.0.0");
 
         assertThat(version).isEqualTo(NacosVersion.V3_0);
         assertThat(version.isV2()).isFalse();
@@ -35,14 +35,14 @@ class NacosVersionTest {
 
     @ParameterizedTest
     @CsvSource({
-        "nacos/nacos-server:2.0.0, V2_0",
-        "nacos/nacos-server:2.1.0, V2_1",
-        "nacos/nacos-server:2.2.0, V2_2",
-        "nacos/nacos-server:2.3.0, V2_3",
-        "nacos/nacos-server:2.4.0, V2_4",
-        "nacos/nacos-server:2.5.0, V2_5",
-        "nacos/nacos-server:3.0.0, V3_0",
-        "nacos/nacos-server:3.1.0, V3_1"
+        "nacos/nacos-server:v2.0.0, V2_0",
+        "nacos/nacos-server:v2.1.0, V2_1",
+        "nacos/nacos-server:v2.2.0, V2_2",
+        "nacos/nacos-server:v2.3.0, V2_3",
+        "nacos/nacos-server:v2.4.0, V2_4",
+        "nacos/nacos-server:v2.5.0, V2_5",
+        "nacos/nacos-server:v3.0.0, V3_0",
+        "nacos/nacos-server:v3.1.0, V3_1"
     })
     @DisplayName("应该正确解析各种版本")
     void shouldParseVariousVersions(String imageName, String expectedVersion) {
@@ -53,9 +53,9 @@ class NacosVersionTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "nacos/nacos-server:2.2.3-slim",
-        "nacos/nacos-server:2.2.3-alpine",
-        "registry.cn-hangzhou.aliyuncs.com/nacos/nacos-server:2.2.3"
+        "nacos/nacos-server:v2.2.3-slim",
+        "nacos/nacos-server:v2.2.3-alpine",
+        "registry.cn-hangzhou.aliyuncs.com/nacos/nacos-server:v2.2.3"
     })
     @DisplayName("应该处理带后缀的镜像名称")
     void shouldHandleImageNamesWithSuffixes(String imageName) {
@@ -83,7 +83,7 @@ class NacosVersionTest {
     @Test
     @DisplayName("未知版本应该返回 UNKNOWN")
     void shouldReturnUnknownForUnrecognizedVersion() {
-        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:1.4.2");
+        NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:v1.4.2");
 
         assertThat(version).isEqualTo(NacosVersion.UNKNOWN);
     }
@@ -91,8 +91,8 @@ class NacosVersionTest {
     @Test
     @DisplayName("应该返回正确的版本前缀")
     void shouldReturnCorrectVersionPrefix() {
-        assertThat(NacosVersion.V2_2.getVersionPrefix()).isEqualTo("2.2");
-        assertThat(NacosVersion.V3_0.getVersionPrefix()).isEqualTo("3.0");
+        assertThat(NacosVersion.V2_2.getVersionPrefix()).isEqualTo("v2.2");
+        assertThat(NacosVersion.V3_0.getVersionPrefix()).isEqualTo("v3.0");
     }
 
     @Test
