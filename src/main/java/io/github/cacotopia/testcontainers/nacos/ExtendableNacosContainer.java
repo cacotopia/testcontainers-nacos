@@ -9,6 +9,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -386,6 +387,32 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public SELF withMySQLContainer(MySQLContainer mysqlContainer) {
         this.databaseConfig = NacosDatabaseConfig.mysqlContainer(mysqlContainer);
+        return self();
+    }
+
+    /**
+     * Configures Nacos to use an external PostgreSQL database.
+     *
+     * @param host     The PostgreSQL host
+     * @param port     The PostgreSQL port
+     * @param database The database name
+     * @param username The PostgreSQL username
+     * @param password The PostgreSQL password
+     * @return This container instance
+     */
+    public SELF withExternalPostgreSQL(String host, int port, String database, String username, String password) {
+        this.databaseConfig = NacosDatabaseConfig.externalPostgreSQL(host, port, database, username, password);
+        return self();
+    }
+
+    /**
+     * Configures Nacos to use a Testcontainers PostgreSQL container.
+     *
+     * @param postgresqlContainer The PostgreSQL container to use
+     * @return This container instance
+     */
+    public SELF withPostgreSQLContainer(PostgreSQLContainer postgresqlContainer) {
+        this.databaseConfig = NacosDatabaseConfig.postgresqlContainer(postgresqlContainer);
         return self();
     }
 

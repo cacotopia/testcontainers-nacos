@@ -18,6 +18,7 @@ A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](h
 - **Support for Nacos 2.x and 3.x** (automatic version detection and configuration adaptation)
 - Standalone and cluster mode
 - **External MySQL database support** (Testcontainers MySQL or external instance)
+- **External PostgreSQL database support** (Testcontainers PostgreSQL or external instance)
 - **Multi-node cluster management** with `NacosCluster`
 - Configurable authentication credentials
 - Exposed ports: HTTP (8848), gRPC (9848), gRPC management (9849)
@@ -136,6 +137,30 @@ MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
 @Container
 NacosContainer nacos = new NacosContainer()
     .withMySQLContainer(mysql);
+```
+
+#### External PostgreSQL Database
+
+Use an external PostgreSQL database instead of the embedded one:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withExternalPostgreSQL("postgres-host", 5432, "nacos_db", "nacos", "nacos_password");
+```
+
+Or use a Testcontainers PostgreSQL container:
+
+```java
+@Container
+PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+    .withDatabaseName("nacos")
+    .withUsername("nacos")
+    .withPassword("nacos");
+
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withPostgreSQLContainer(postgres);
 ```
 
 #### Cluster Mode (Single Node)
@@ -374,6 +399,8 @@ For other frameworks, use the container's `getServiceUrl()`, `getUsername()`, an
 | `withDatabaseConfig(NacosDatabaseConfig config)` | Set database configuration | embedded |
 | `withExternalMySQL(String host, int port, String db, String user, String pwd)` | Use external MySQL | - |
 | `withMySQLContainer(MySQLContainer<?> mysql)` | Use Testcontainers MySQL | - |
+| `withExternalPostgreSQL(String host, int port, String db, String user, String pwd)` | Use external PostgreSQL | - |
+| `withPostgreSQLContainer(PostgreSQLContainer<?> postgres)` | Use Testcontainers PostgreSQL | - |
 | `withClusterMode(boolean enabled)` | Enable cluster mode | `false` |
 | `withClusterNodes(NacosClusterNode... nodes)` | Configure cluster nodes | - |
 | `withClusterNetwork(Network network)` | Set Docker network for cluster | - |
@@ -521,6 +548,7 @@ The container automatically handles the following version differences:
 | Database Type | `SPRING_DATASOURCE_PLATFORM` | `spring.sql.init.platform` |
 | MySQL Host | `MYSQL_SERVICE_HOST` | `db.url.0` |
 | MySQL Port | `MYSQL_SERVICE_PORT` | `db.url.0` (in URL) |
+| PostgreSQL | Supported via `SPRING_DATASOURCE_PLATFORM=postgresql` | Supported via `spring.sql.init.platform=postgresql` |
 | Cluster Mode | `NACOS_MODE=cluster` | `nacos.standalone=false` |
 | Cluster Nodes | `NACOS_SERVERS` | `nacos.member.list` |
 | Server IP | `NACOS_SERVER_IP` | `nacos.server.ip` |

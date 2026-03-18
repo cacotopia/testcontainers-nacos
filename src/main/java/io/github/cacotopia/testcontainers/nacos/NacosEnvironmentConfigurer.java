@@ -2,7 +2,6 @@ package io.github.cacotopia.testcontainers.nacos;
 
 import org.testcontainers.containers.GenericContainer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ public class NacosEnvironmentConfigurer {
     /**
      * Creates a new NacosEnvironmentConfigurer with the specified version and container.
      *
-     * @param version The Nacos version
+     * @param version   The Nacos version
      * @param container The container to configure
      */
     public NacosEnvironmentConfigurer(NacosVersion version, GenericContainer<?> container) {
@@ -36,12 +35,12 @@ public class NacosEnvironmentConfigurer {
     /**
      * Configures basic environment variables.
      *
-     * @param username The Nacos username
-     * @param password The Nacos password
-     * @param authEnabled Whether authentication is enabled
+     * @param username        The Nacos username
+     * @param password        The Nacos password
+     * @param authEnabled     Whether authentication is enabled
      * @param tokenExpiration Token expiration time in seconds
-     * @param consoleEnabled Whether the console is enabled
-     * @param namespace The Nacos namespace
+     * @param consoleEnabled  Whether the console is enabled
+     * @param namespace       The Nacos namespace
      */
     public void configureBasicSettings(String username, String password,
                                        boolean authEnabled, int tokenExpiration,
@@ -84,6 +83,8 @@ public class NacosEnvironmentConfigurer {
             configureEmbeddedDatabase();
         } else if (databaseConfig.isMySQL()) {
             configureMySQL(databaseConfig);
+        } else if (databaseConfig.isPostgreSQL()) {
+            configurePostgreSQL(databaseConfig);
         }
     }
 
@@ -131,10 +132,39 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
+     * Configures PostgreSQL database settings.
+     *
+     * @param databaseConfig The database configuration
+     */
+    private void configurePostgreSQL(NacosDatabaseConfig databaseConfig) {
+        if (version.isV3()) {
+            // Nacos 3.x 使用新的数据库配置方式
+            withEnv("spring.sql.init.platform", "postgresql");
+            withEnv("db.num", "1");
+            withEnv("db.url.0", databaseConfig.getUrl());
+            withEnv("db.user.0", databaseConfig.getUsername());
+            withEnv("db.password.0", databaseConfig.getPassword());
+        } else {
+            // Nacos 2.x 使用旧的数据库配置方式
+            withEnv("SPRING_DATASOURCE_PLATFORM", "postgresql");
+            withEnv("MYSQL_SERVICE_HOST", databaseConfig.getHost());
+            withEnv("MYSQL_SERVICE_PORT", String.valueOf(databaseConfig.getPort()));
+            withEnv("MYSQL_SERVICE_DB_NAME", databaseConfig.getDatabase());
+            withEnv("MYSQL_SERVICE_USER", databaseConfig.getUsername());
+            withEnv("MYSQL_SERVICE_PASSWORD", databaseConfig.getPassword());
+
+            String url = databaseConfig.getUrl();
+            if (url != null) {
+                withEnv("SPRING_DATASOURCE_URL", url);
+            }
+        }
+    }
+
+    /**
      * Configures cluster mode settings.
      *
-     * @param clusterMode Whether cluster mode is enabled
-     * @param clusterNodes List of cluster nodes
+     * @param clusterMode   Whether cluster mode is enabled
+     * @param clusterNodes  List of cluster nodes
      * @param clusterNodeId Cluster node ID
      */
     public void configureClusterMode(boolean clusterMode, List<NacosClusterNode> clusterNodes, String clusterNodeId) {
@@ -229,7 +259,7 @@ public class NacosEnvironmentConfigurer {
     /**
      * Helper method to set environment variables.
      *
-     * @param key The environment variable key
+     * @param key   The environment variable key
      * @param value The environment variable value
      */
     private void withEnv(String key, String value) {

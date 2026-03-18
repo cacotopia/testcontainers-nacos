@@ -2,6 +2,7 @@ package io.github.cacotopia.testcontainers.nacos;
 
 
 import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * Nacos database configuration class.
@@ -24,7 +25,15 @@ public class NacosDatabaseConfig {
         /**
          * External MySQL instance
          */
-        EXTERNAL_MYSQL
+        EXTERNAL_MYSQL,
+        /**
+         * Testcontainers PostgreSQL container
+         */
+        POSTGRESQL_CONTAINER,
+        /**
+         * External PostgreSQL instance
+         */
+        EXTERNAL_POSTGRESQL
     }
 
     /**
@@ -68,6 +77,12 @@ public class NacosDatabaseConfig {
      * MySQL container instance
      */
     private MySQLContainer mysqlContainer;
+
+    // Testcontainers PostgreSQL container reference
+    /**
+     * PostgreSQL container instance
+     */
+    private PostgreSQLContainer postgresqlContainer;
 
     /**
      * Private constructor. Use factory methods to create instances.
@@ -143,6 +158,62 @@ public class NacosDatabaseConfig {
     }
 
     /**
+     * Creates an external PostgreSQL configuration.
+     *
+     * @param host     The PostgreSQL host
+     * @param port     The PostgreSQL port
+     * @param database The database name
+     * @param username The PostgreSQL username
+     * @param password The PostgreSQL password
+     * @return A new NacosDatabaseConfig instance with external PostgreSQL
+     */
+    public static NacosDatabaseConfig externalPostgreSQL(String host, int port, String database, String username, String password) {
+        NacosDatabaseConfig config = new NacosDatabaseConfig();
+        config.type = DatabaseType.EXTERNAL_POSTGRESQL;
+        config.host = host;
+        config.port = port;
+        config.database = database;
+        config.username = username;
+        config.password = password;
+        return config;
+    }
+
+    /**
+     * Creates a configuration using Testcontainers PostgreSQL container.
+     *
+     * @param postgresqlContainer The PostgreSQL container to use
+     * @return A new NacosDatabaseConfig instance with PostgreSQL container
+     */
+    public static NacosDatabaseConfig postgresqlContainer(PostgreSQLContainer postgresqlContainer) {
+        NacosDatabaseConfig config = new NacosDatabaseConfig();
+        config.type = DatabaseType.POSTGRESQL_CONTAINER;
+        config.postgresqlContainer = postgresqlContainer;
+        config.host = postgresqlContainer.getHost();
+        config.port = postgresqlContainer.getMappedPort(5432);
+        config.database = postgresqlContainer.getDatabaseName();
+        config.username = postgresqlContainer.getUsername();
+        config.password = postgresqlContainer.getPassword();
+        return config;
+    }
+
+    /**
+     * Creates a configuration using Testcontainers PostgreSQL container (simplified version).
+     *
+     * @param postgresqlImage The PostgreSQL Docker image
+     * @param database        The database name
+     * @param username        The MySQL username
+     * @param password        The MySQL password
+     * @return A new NacosDatabaseConfig instance with MySQL container
+     */
+    public static NacosDatabaseConfig postgresqlContainer(String postgresqlImage, String database, String username, String password) {
+        PostgreSQLContainer postgresql = new PostgreSQLContainer(postgresqlImage)
+            .withDatabaseName(database)
+            .withUsername(username)
+            .withPassword(password);
+        return postgresqlContainer(postgresql);
+    }
+
+    /**
      * Gets the database type.
      *
      * @return The database type
@@ -208,6 +279,10 @@ public class NacosDatabaseConfig {
         if (type == DatabaseType.EMBEDDED) {
             return null;
         }
+        if (isPostgreSQL()) {
+            return String.format("jdbc:postgresql://%s:%d/%s?currentSchema=nacos",
+                host, port, database);
+        }
         return String.format("jdbc:mysql://%s:%d/%s?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai",
             host, port, database);
     }
@@ -219,6 +294,15 @@ public class NacosDatabaseConfig {
      */
     public MySQLContainer getMysqlContainer() {
         return mysqlContainer;
+    }
+
+    /**
+     * Gets the PostgreSQL container instance.
+     *
+     * @return The PostgreSQL container instance, or null if not using PostgreSQL container
+     */
+    public PostgreSQLContainer getPostgresqlContainer() {
+        return postgresqlContainer;
     }
 
     /**
@@ -237,6 +321,15 @@ public class NacosDatabaseConfig {
      */
     public boolean isMySQL() {
         return type == DatabaseType.MYSQL_CONTAINER || type == DatabaseType.EXTERNAL_MYSQL;
+    }
+
+    /**
+     * Checks if using PostgreSQL database (either container or external).
+     *
+     * @return true if using PostgreSQL, false otherwise
+     */
+    public boolean isPostgreSQL() {
+        return type == DatabaseType.POSTGRESQL_CONTAINER || type == DatabaseType.EXTERNAL_POSTGRESQL;
     }
 
     /**
