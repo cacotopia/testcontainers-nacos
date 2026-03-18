@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos.images;
+package io.github.cacotopia.testcontainers.nacos.images;
 
 import org.testcontainers.images.AbstractImagePullPolicy;
 import org.testcontainers.images.ImageData;

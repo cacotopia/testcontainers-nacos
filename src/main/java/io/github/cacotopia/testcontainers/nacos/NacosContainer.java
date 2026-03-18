@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 /**
  * Nacos Testcontainer

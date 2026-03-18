@@ -1,15 +1,15 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 /**
  * Nacos 集群节点配置
  */
 public class NacosClusterNode {
-    
+
     private String nodeId;
     private String host;
     private int port;
     private String ip;
-    
+
     /**
      * 创建集群节点
      * @param nodeId 节点标识
@@ -22,7 +22,7 @@ public class NacosClusterNode {
         this.port = port;
         this.ip = host;
     }
-    
+
     /**
      * 创建集群节点（使用 IP）
      * @param nodeId 节点标识
@@ -34,30 +34,30 @@ public class NacosClusterNode {
         node.ip = ip;
         return node;
     }
-    
+
     public String getNodeId() {
         return nodeId;
     }
-    
+
     public String getHost() {
         return host;
     }
-    
+
     public int getPort() {
         return port;
     }
-    
+
     public String getIp() {
         return ip;
     }
-    
+
     /**
      * 获取集群地址格式 ip:port
      */
     public String getClusterAddress() {
         return ip + ":" + port;
     }
-    
+
     @Override
     public String toString() {
         return "NacosClusterNode{" +

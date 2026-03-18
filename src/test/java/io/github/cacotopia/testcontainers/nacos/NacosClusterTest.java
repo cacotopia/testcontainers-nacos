@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +17,7 @@ class NacosVersionTest {
     @DisplayName("应该从镜像名称解析 Nacos 2.2 版本")
     void shouldParseVersion22FromImageName() {
         NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:2.2.3");
-        
+
         assertThat(version).isEqualTo(NacosVersion.V2_2);
         assertThat(version.isV2()).isTrue();
         assertThat(version.isV3()).isFalse();
@@ -27,7 +27,7 @@ class NacosVersionTest {
     @DisplayName("应该从镜像名称解析 Nacos 3.0 版本")
     void shouldParseVersion30FromImageName() {
         NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:3.0.0");
-        
+
         assertThat(version).isEqualTo(NacosVersion.V3_0);
         assertThat(version.isV2()).isFalse();
         assertThat(version.isV3()).isTrue();
@@ -47,7 +47,7 @@ class NacosVersionTest {
     @DisplayName("应该正确解析各种版本")
     void shouldParseVariousVersions(String imageName, String expectedVersion) {
         NacosVersion version = NacosVersion.fromImageName(imageName);
-        
+
         assertThat(version).isEqualTo(NacosVersion.valueOf(expectedVersion));
     }
 
@@ -60,7 +60,7 @@ class NacosVersionTest {
     @DisplayName("应该处理带后缀的镜像名称")
     void shouldHandleImageNamesWithSuffixes(String imageName) {
         NacosVersion version = NacosVersion.fromImageName(imageName);
-        
+
         assertThat(version).isEqualTo(NacosVersion.V2_2);
     }
 
@@ -68,7 +68,7 @@ class NacosVersionTest {
     @DisplayName("空镜像名称应该返回默认版本")
     void shouldReturnDefaultVersionForEmptyImageName() {
         NacosVersion version = NacosVersion.fromImageName("");
-        
+
         assertThat(version).isEqualTo(NacosVersion.getDefault());
     }
 
@@ -76,7 +76,7 @@ class NacosVersionTest {
     @DisplayName("null 镜像名称应该返回默认版本")
     void shouldReturnDefaultVersionForNullImageName() {
         NacosVersion version = NacosVersion.fromImageName(null);
-        
+
         assertThat(version).isEqualTo(NacosVersion.getDefault());
     }
 
@@ -84,7 +84,7 @@ class NacosVersionTest {
     @DisplayName("未知版本应该返回 UNKNOWN")
     void shouldReturnUnknownForUnrecognizedVersion() {
         NacosVersion version = NacosVersion.fromImageName("nacos/nacos-server:1.4.2");
-        
+
         assertThat(version).isEqualTo(NacosVersion.UNKNOWN);
     }
 
@@ -106,7 +106,7 @@ class NacosVersionTest {
     @DisplayName("应该返回默认镜像")
     void shouldReturnDefaultImage() {
         String defaultImage = NacosVersion.getDefaultImage();
-        
+
         assertThat(defaultImage)
             .isNotNull()
             .contains("nacos/nacos-server");

@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,7 @@ class NacosContainerBasicTest {
     @DisplayName("容器应该成功启动并返回服务URL")
     void shouldStartAndReturnServiceUrl() {
         String serviceUrl = nacos.getServiceUrl();
-        
+
         assertThat(serviceUrl)
             .isNotNull()
             .startsWith("http://")
@@ -38,7 +38,7 @@ class NacosContainerBasicTest {
     @DisplayName("应该返回gRPC地址")
     void shouldReturnGrpcAddress() {
         String grpcAddress = nacos.getGrpcAddress();
-        
+
         assertThat(grpcAddress)
             .isNotNull()
             .contains(":");
@@ -48,7 +48,7 @@ class NacosContainerBasicTest {
     @DisplayName("应该检测到默认版本为2.x")
     void shouldDetectDefaultVersionAsV2() {
         NacosVersion version = nacos.getNacosVersion();
-        
+
         assertThat(version).isNotNull();
         assertThat(nacos.isV2()).isTrue();
         assertThat(nacos.isV3()).isFalse();
@@ -58,7 +58,7 @@ class NacosContainerBasicTest {
     @DisplayName("应该返回Docker镜像名称")
     void shouldReturnDockerImageName() {
         String imageName = nacos.getDockerImageName();
-        
+
         assertThat(imageName)
             .isNotNull()
             .contains("nacos/nacos-server");

@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.testcontainers.containers.GenericContainer;
 
@@ -11,19 +11,19 @@ import java.util.stream.Collectors;
  * 根据 Nacos 版本（2.x 或 3.x）自动适配环境变量
  */
 public class NacosEnvironmentConfigurer {
-    
+
     private final NacosVersion version;
     private final GenericContainer<?> container;
-    
+
     public NacosEnvironmentConfigurer(NacosVersion version, GenericContainer<?> container) {
         this.version = version != null ? version : NacosVersion.getDefault();
         this.container = container;
     }
-    
+
     /**
      * 配置基础环境变量
      */
-    public void configureBasicSettings(String username, String password, 
+    public void configureBasicSettings(String username, String password,
                                        boolean authEnabled, int tokenExpiration,
                                        boolean consoleEnabled, String namespace) {
         // 认证配置（2.x 和 3.x 相同）
@@ -32,7 +32,7 @@ public class NacosEnvironmentConfigurer {
         withEnv("NACOS_AUTH_PASSWORD", password);
         withEnv("NACOS_AUTH_TOKEN", "SecretKey012345678901234567890123456789012345678901234567890123456789");
         withEnv("NACOS_AUTH_TOKEN_EXPIRE_SECONDS", String.valueOf(tokenExpiration));
-        
+
         // 控制台配置
         if (version.isV3()) {
             // Nacos 3.x 使用新的控制台配置
@@ -41,13 +41,13 @@ public class NacosEnvironmentConfigurer {
             // Nacos 2.x 控制台配置
             withEnv("NACOS_CONSOLE_ENABLED", String.valueOf(consoleEnabled));
         }
-        
+
         // 命名空间配置
         if (namespace != null && !namespace.isEmpty()) {
             withEnv("NACOS_NAMESPACE", namespace);
         }
     }
-    
+
     /**
      * 配置数据库
      */
@@ -58,7 +58,7 @@ public class NacosEnvironmentConfigurer {
             configureMySQL(databaseConfig);
         }
     }
-    
+
     /**
      * 配置嵌入式数据库
      */
@@ -72,7 +72,7 @@ public class NacosEnvironmentConfigurer {
             withEnv("NACOS_AUTH_CACHE_ENABLE", "true");
         }
     }
-    
+
     /**
      * 配置 MySQL 数据库
      */
@@ -92,14 +92,14 @@ public class NacosEnvironmentConfigurer {
             withEnv("MYSQL_SERVICE_DB_NAME", databaseConfig.getDatabase());
             withEnv("MYSQL_SERVICE_USER", databaseConfig.getUsername());
             withEnv("MYSQL_SERVICE_PASSWORD", databaseConfig.getPassword());
-            
+
             String url = databaseConfig.getUrl();
             if (url != null) {
                 withEnv("SPRING_DATASOURCE_URL", url);
             }
         }
     }
-    
+
     /**
      * 配置集群模式
      */
@@ -112,13 +112,13 @@ public class NacosEnvironmentConfigurer {
                 // Nacos 2.x 使用 NACOS_MODE=cluster
                 withEnv("NACOS_MODE", "cluster");
             }
-            
+
             // 配置集群节点列表
             if (!clusterNodes.isEmpty()) {
                 String clusterConf = clusterNodes.stream()
                     .map(NacosClusterNode::getClusterAddress)
                     .collect(Collectors.joining(","));
-                
+
                 if (version.isV3()) {
                     // Nacos 3.x 使用 nacos.member.list
                     withEnv("nacos.member.list", clusterConf);
@@ -127,7 +127,7 @@ public class NacosEnvironmentConfigurer {
                     withEnv("NACOS_SERVERS", clusterConf.replace(",", "\n"));
                 }
             }
-            
+
             // 设置节点标识
             if (clusterNodeId != null) {
                 if (version.isV3()) {
@@ -145,7 +145,7 @@ public class NacosEnvironmentConfigurer {
             }
         }
     }
-    
+
     /**
      * 配置指标监控
      */
@@ -153,14 +153,14 @@ public class NacosEnvironmentConfigurer {
         if (metricsEnabled) {
             withEnv("MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE", "*");
             withEnv("MANAGEMENT_ENDPOINTS_HEALTH_SHOW_DETAILS", "always");
-            
+
             if (version.isV3()) {
                 // Nacos 3.x 可能有额外的指标配置
                 withEnv("nacos.core.monitor.topn.enabled", "true");
             }
         }
     }
-    
+
     /**
      * 配置端口（Nacos 3.x 使用新的配置项）
      */
@@ -173,7 +173,7 @@ public class NacosEnvironmentConfigurer {
         }
         // Nacos 2.x 使用默认端口配置，不需要额外设置
     }
-    
+
     /**
      * 获取等待策略的检测路径
      */
@@ -184,7 +184,7 @@ public class NacosEnvironmentConfigurer {
         }
         return "/nacos";
     }
-    
+
     /**
      * 辅助方法：设置环境变量
      */
@@ -193,21 +193,21 @@ public class NacosEnvironmentConfigurer {
             container.addEnv(key, value);
         }
     }
-    
+
     /**
      * 获取当前版本
      */
     public NacosVersion getVersion() {
         return version;
     }
-    
+
     /**
      * 判断是否为 Nacos 3.x
      */
     public boolean isV3() {
         return version.isV3();
     }
-    
+
     /**
      * 判断是否为 Nacos 2.x
      */

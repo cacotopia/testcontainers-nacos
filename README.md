@@ -3,7 +3,7 @@
 A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](https://nacos.io/) - an easy-to-use dynamic service discovery, configuration and service management platform.
 
 [![GitHub Release](https://img.shields.io/github/v/release/cacotopia/testcontainers-nacos?label=Release)](https://github.com/cacotopia/testcontainers-nacos/releases)
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.cacotopia/testcontainers-nacos.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.github.cacotopia/testcontainers-nacos)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.cacotopia/testcontainers-nacos.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.cacotopia/testcontainers-nacos)
 ![GitHub Release Date](https://img.shields.io/github/release-date-pre/cacotopia/testcontainers-nacos)
 ![Github Last Commit](https://img.shields.io/github/last-commit/cacotopia/testcontainers-nacos)
 ![License](https://img.shields.io/github/license/cacotopia/testcontainers-nacos?label=License)
@@ -31,13 +31,13 @@ A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](h
 
 ## Installation
 
-The release versions of this project are available at [Maven Central](https://central.sonatype.com/artifact/com.github.cacotopia/testcontainers-nacos).
+The release versions of this project are available at [Maven Central](https://central.sonatype.com/artifact/io.github.cacotopia/testcontainers-nacos).
 
 ### Maven
 
 ```xml
 <dependency>
-    <groupId>com.github.cacotopia</groupId>
+    <groupId>io.github.cacotopia</groupId>
     <artifactId>testcontainers-nacos</artifactId>
     <version>VERSION</version>
     <scope>test</scope>
@@ -47,7 +47,7 @@ The release versions of this project are available at [Maven Central](https://ce
 ### Gradle
 
 ```groovy
-testImplementation 'com.github.cacotopia:testcontainers-nacos:VERSION'
+testImplementation 'io.github.cacotopia:testcontainers-nacos:VERSION'
 ```
 
 For a version overview, see [versions.md](versions.md).

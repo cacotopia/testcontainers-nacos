@@ -1,4 +1,4 @@
-package com.github.cacotopia.testcontainers.nacos;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.testcontainers.containers.Network;
 import org.testcontainers.lifecycle.Startable;
