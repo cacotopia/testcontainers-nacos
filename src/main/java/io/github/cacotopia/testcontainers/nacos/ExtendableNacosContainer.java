@@ -212,9 +212,6 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         if (!commandParts.isEmpty()) {
             setCommand(commandParts.toArray(new String[0]));
         }
-
-        // 初始化客户端工厂
-        this.clientFactory = new NacosClientFactory(getServiceUrl(), username, password, namespace);
     }
 
     /**
@@ -226,6 +223,9 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         super.containerIsStarted(containerInfo);
+
+        // 容器启动后，初始化客户端工厂
+        this.clientFactory = new NacosClientFactory(getServiceUrl(), username, password, namespace);
 
         // 容器启动后，导入初始配置和注册服务
         try {
