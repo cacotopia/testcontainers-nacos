@@ -4,36 +4,72 @@ package io.github.cacotopia.testcontainers.nacos;
 import org.testcontainers.mysql.MySQLContainer;
 
 /**
- * Nacos 数据库配置类
- * 支持嵌入式数据库、外置 MySQL 容器或外部 MySQL 实例
+ * Nacos database configuration class.
+ * Supports embedded database, external MySQL container, or external MySQL instance.
  */
 public class NacosDatabaseConfig {
 
+    /**
+     * Database type enum
+     */
     public enum DatabaseType {
-        EMBEDDED,      // 嵌入式数据库（默认）
-        MYSQL_CONTAINER, // Testcontainers MySQL 容器
-        EXTERNAL_MYSQL  // 外部 MySQL 实例
+        EMBEDDED,      // Embedded database (default)
+        MYSQL_CONTAINER, // Testcontainers MySQL container
+        EXTERNAL_MYSQL  // External MySQL instance
     }
 
+    /**
+     * Database type
+     */
     private DatabaseType type = DatabaseType.EMBEDDED;
 
-    // MySQL 连接配置
+    // MySQL connection configuration
+    /**
+     * MySQL host
+     */
     private String host;
+
+    /**
+     * MySQL port
+     */
     private Integer port;
+
+    /**
+     * Database name
+     */
     private String database = "nacos";
+
+    /**
+     * MySQL username
+     */
     private String username = "nacos";
+
+    /**
+     * MySQL password
+     */
     private String password = "nacos";
+
+    /**
+     * JDBC URL
+     */
     private String url;
 
-    // Testcontainers MySQL 容器引用
+    // Testcontainers MySQL container reference
+    /**
+     * MySQL container instance
+     */
     private MySQLContainer mysqlContainer;
 
-    // 私有构造方法，使用工厂方法创建
+    /**
+     * Private constructor. Use factory methods to create instances.
+     */
     private NacosDatabaseConfig() {
     }
 
     /**
-     * 创建嵌入式数据库配置（默认）
+     * Creates an embedded database configuration (default).
+     *
+     * @return A new NacosDatabaseConfig instance with embedded database
      */
     public static NacosDatabaseConfig embedded() {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
@@ -42,7 +78,14 @@ public class NacosDatabaseConfig {
     }
 
     /**
-     * 创建外部 MySQL 配置
+     * Creates an external MySQL configuration.
+     *
+     * @param host The MySQL host
+     * @param port The MySQL port
+     * @param database The database name
+     * @param username The MySQL username
+     * @param password The MySQL password
+     * @return A new NacosDatabaseConfig instance with external MySQL
      */
     public static NacosDatabaseConfig externalMySQL(String host, int port, String database, String username, String password) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
@@ -56,7 +99,10 @@ public class NacosDatabaseConfig {
     }
 
     /**
-     * 使用 Testcontainers MySQL 容器
+     * Creates a configuration using Testcontainers MySQL container.
+     *
+     * @param mysqlContainer The MySQL container to use
+     * @return A new NacosDatabaseConfig instance with MySQL container
      */
     public static NacosDatabaseConfig mysqlContainer(MySQLContainer mysqlContainer) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
@@ -71,7 +117,13 @@ public class NacosDatabaseConfig {
     }
 
     /**
-     * 使用 Testcontainers MySQL 容器（简化版）
+     * Creates a configuration using Testcontainers MySQL container (simplified version).
+     *
+     * @param mysqlImage The MySQL Docker image
+     * @param database The database name
+     * @param username The MySQL username
+     * @param password The MySQL password
+     * @return A new NacosDatabaseConfig instance with MySQL container
      */
     public static NacosDatabaseConfig mysqlContainer(String mysqlImage, String database, String username, String password) {
         MySQLContainer mysql = new MySQLContainer(mysqlImage)
@@ -81,30 +133,65 @@ public class NacosDatabaseConfig {
         return mysqlContainer(mysql);
     }
 
+    /**
+     * Gets the database type.
+     *
+     * @return The database type
+     */
     public DatabaseType getType() {
         return type;
     }
 
+    /**
+     * Gets the MySQL host.
+     *
+     * @return The MySQL host
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Gets the MySQL port.
+     *
+     * @return The MySQL port
+     */
     public Integer getPort() {
         return port;
     }
 
+    /**
+     * Gets the database name.
+     *
+     * @return The database name
+     */
     public String getDatabase() {
         return database;
     }
 
+    /**
+     * Gets the MySQL username.
+     *
+     * @return The MySQL username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Gets the MySQL password.
+     *
+     * @return The MySQL password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Gets the JDBC URL.
+     *
+     * @return The JDBC URL, or null for embedded database
+     */
     public String getUrl() {
         if (url != null) {
             return url;
@@ -116,18 +203,38 @@ public class NacosDatabaseConfig {
             host, port, database);
     }
 
+    /**
+     * Gets the MySQL container instance.
+     *
+     * @return The MySQL container instance, or null if not using MySQL container
+     */
     public MySQLContainer getMysqlContainer() {
         return mysqlContainer;
     }
 
+    /**
+     * Checks if using embedded database.
+     *
+     * @return true if using embedded database, false otherwise
+     */
     public boolean isEmbedded() {
         return type == DatabaseType.EMBEDDED;
     }
 
+    /**
+     * Checks if using MySQL database (either container or external).
+     *
+     * @return true if using MySQL, false otherwise
+     */
     public boolean isMySQL() {
         return type == DatabaseType.MYSQL_CONTAINER || type == DatabaseType.EXTERNAL_MYSQL;
     }
 
+    /**
+     * Returns a string representation of the NacosDatabaseConfig.
+     *
+     * @return A string representation of the object
+     */
     @Override
     public String toString() {
         return "NacosDatabaseConfig{" +

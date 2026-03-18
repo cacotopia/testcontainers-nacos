@@ -9,17 +9,41 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Nacos 集群管理类
- * 用于简化多节点 Nacos 集群的创建和管理
+ * Nacos cluster management class.
+ * Used to simplify the creation and management of multi-node Nacos clusters.
  */
 public class NacosCluster implements Startable {
 
+    /**
+     * Number of nodes in the cluster
+     */
     private final int nodeCount;
+
+    /**
+     * List of Nacos containers in the cluster
+     */
     private final List<NacosContainer> nodes;
+
+    /**
+     * Network for inter-container communication
+     */
     private final Network network;
+
+    /**
+     * Database configuration for the cluster
+     */
     private final NacosDatabaseConfig databaseConfig;
+
+    /**
+     * Nacos Docker image to use
+     */
     private final String nacosImage;
 
+    /**
+     * Creates a new NacosCluster using the provided Builder.
+     *
+     * @param builder The builder to use
+     */
     private NacosCluster(Builder builder) {
         this.nodeCount = builder.nodeCount;
         this.network = builder.network != null ? builder.network : Network.newNetwork();
@@ -28,6 +52,10 @@ public class NacosCluster implements Startable {
         this.nodes = new ArrayList<>();
     }
 
+    /**
+     * Starts the Nacos cluster.
+     * First starts the MySQL container if needed, then creates and starts all Nacos nodes.
+     */
     @Override
     public void start() {
         // 如果使用 MySQL 容器，先启动 MySQL
@@ -55,6 +83,10 @@ public class NacosCluster implements Startable {
         }
     }
 
+    /**
+     * Stops the Nacos cluster.
+     * Stops all Nacos nodes, then stops the MySQL container if used, and closes the network.
+     */
     @Override
     public void stop() {
         // 停止所有节点
@@ -76,13 +108,21 @@ public class NacosCluster implements Startable {
         }
     }
 
+    /**
+     * Closes the Nacos cluster by stopping all resources.
+     */
     @Override
     public void close() {
         stop();
     }
 
     /**
-     * 创建单个节点
+     * Creates a single Nacos node for the cluster.
+     *
+     * @param nodeName The name of the node
+     * @param nodeIndex The index of the node
+     * @param allNodes List of all nodes in the cluster
+     * @return A NacosContainer instance
      */
     private NacosContainer createNode(String nodeName, int nodeIndex, List<NacosClusterNode> allNodes) {
         NacosContainer node = new NacosContainer(nacosImage)
@@ -104,21 +144,29 @@ public class NacosCluster implements Startable {
     }
 
     /**
-     * 获取所有节点
+     * Gets all nodes in the cluster.
+     *
+     * @return List of NacosContainer instances
      */
     public List<NacosContainer> getNodes() {
         return new ArrayList<>(nodes);
     }
 
     /**
-     * 获取主节点（第一个节点）
+     * Gets the primary node (first node) in the cluster.
+     *
+     * @return The primary NacosContainer instance, or null if no nodes
      */
     public NacosContainer getPrimaryNode() {
         return nodes.isEmpty() ? null : nodes.get(0);
     }
 
     /**
-     * 获取指定索引的节点
+     * Gets the node at the specified index.
+     *
+     * @param index The index of the node
+     * @return The NacosContainer instance at the specified index
+     * @throws IndexOutOfBoundsException if the index is out of range
      */
     public NacosContainer getNode(int index) {
         if (index < 0 || index >= nodes.size()) {
@@ -128,14 +176,18 @@ public class NacosCluster implements Startable {
     }
 
     /**
-     * 获取集群大小
+     * Gets the number of nodes in the cluster.
+     *
+     * @return The number of nodes
      */
     public int getNodeCount() {
         return nodes.size();
     }
 
     /**
-     * 获取所有节点的服务 URL
+     * Gets service URLs for all nodes in the cluster.
+     *
+     * @return List of service URLs
      */
     public List<String> getServiceUrls() {
         return nodes.stream()
@@ -144,7 +196,9 @@ public class NacosCluster implements Startable {
     }
 
     /**
-     * 获取主节点服务 URL
+     * Gets the service URL of the primary node.
+     *
+     * @return The service URL of the primary node, or null if no primary node
      */
     public String getPrimaryServiceUrl() {
         NacosContainer primary = getPrimaryNode();
@@ -152,7 +206,7 @@ public class NacosCluster implements Startable {
     }
 
     /**
-     * 等待集群所有节点就绪
+     * Waits for all nodes in the cluster to become ready.
      */
     public void waitForClusterReady() {
         for (NacosContainer node : nodes) {
@@ -169,46 +223,99 @@ public class NacosCluster implements Startable {
     }
 
     /**
-     * 创建 Builder
+     * Creates a new Builder for NacosCluster.
+     *
+     * @return A new Builder instance
      */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Builder 类
+     * Builder class for NacosCluster.
      */
     public static class Builder {
+        /**
+         * Number of nodes in the cluster (default: 3)
+         */
         private int nodeCount = 3;
+
+        /**
+         * Network for inter-container communication
+         */
         private Network network;
+
+        /**
+         * Database configuration for the cluster
+         */
         private NacosDatabaseConfig databaseConfig;
+
+        /**
+         * Nacos Docker image to use
+         */
         private String nacosImage;
 
+        /**
+         * Sets the number of nodes in the cluster.
+         *
+         * @param nodeCount The number of nodes
+         * @return This Builder instance
+         */
         public Builder withNodeCount(int nodeCount) {
             this.nodeCount = nodeCount;
             return this;
         }
 
+        /**
+         * Sets the network for inter-container communication.
+         *
+         * @param network The network to use
+         * @return This Builder instance
+         */
         public Builder withNetwork(Network network) {
             this.network = network;
             return this;
         }
 
+        /**
+         * Sets the database configuration for the cluster.
+         *
+         * @param databaseConfig The database configuration
+         * @return This Builder instance
+         */
         public Builder withDatabaseConfig(NacosDatabaseConfig databaseConfig) {
             this.databaseConfig = databaseConfig;
             return this;
         }
 
+        /**
+         * Configures the cluster to use a MySQL container for storage.
+         *
+         * @param mysqlContainer The MySQL container to use
+         * @return This Builder instance
+         */
         public Builder withMySQLContainer(MySQLContainer mysqlContainer) {
             this.databaseConfig = NacosDatabaseConfig.mysqlContainer(mysqlContainer);
             return this;
         }
 
+        /**
+         * Sets the Nacos Docker image to use.
+         *
+         * @param nacosImage The Docker image name
+         * @return This Builder instance
+         */
         public Builder withNacosImage(String nacosImage) {
             this.nacosImage = nacosImage;
             return this;
         }
 
+        /**
+         * Builds the NacosCluster instance.
+         *
+         * @return A new NacosCluster instance
+         * @throws IllegalArgumentException if node count is less than 1
+         */
         public NacosCluster build() {
             if (nodeCount < 1) {
                 throw new IllegalArgumentException("Node count must be at least 1");

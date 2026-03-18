@@ -7,21 +7,41 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Nacos 环境变量配置器
- * 根据 Nacos 版本（2.x 或 3.x）自动适配环境变量
+ * Nacos environment variable configurer.
+ * Automatically adapts environment variables based on Nacos version (2.x or 3.x).
  */
 public class NacosEnvironmentConfigurer {
 
+    /**
+     * Nacos version
+     */
     private final NacosVersion version;
+
+    /**
+     * Container instance to configure
+     */
     private final GenericContainer<?> container;
 
+    /**
+     * Creates a new NacosEnvironmentConfigurer with the specified version and container.
+     *
+     * @param version The Nacos version
+     * @param container The container to configure
+     */
     public NacosEnvironmentConfigurer(NacosVersion version, GenericContainer<?> container) {
         this.version = version != null ? version : NacosVersion.getDefault();
         this.container = container;
     }
 
     /**
-     * 配置基础环境变量
+     * Configures basic environment variables.
+     *
+     * @param username The Nacos username
+     * @param password The Nacos password
+     * @param authEnabled Whether authentication is enabled
+     * @param tokenExpiration Token expiration time in seconds
+     * @param consoleEnabled Whether the console is enabled
+     * @param namespace The Nacos namespace
      */
     public void configureBasicSettings(String username, String password,
                                        boolean authEnabled, int tokenExpiration,
@@ -49,7 +69,9 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置数据库
+     * Configures database settings.
+     *
+     * @param databaseConfig The database configuration
      */
     public void configureDatabase(NacosDatabaseConfig databaseConfig) {
         if (databaseConfig == null || databaseConfig.isEmbedded()) {
@@ -60,7 +82,7 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置嵌入式数据库
+     * Configures embedded database settings.
      */
     private void configureEmbeddedDatabase() {
         if (version.isV3()) {
@@ -74,7 +96,9 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置 MySQL 数据库
+     * Configures MySQL database settings.
+     *
+     * @param databaseConfig The database configuration
      */
     private void configureMySQL(NacosDatabaseConfig databaseConfig) {
         if (version.isV3()) {
@@ -101,7 +125,11 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置集群模式
+     * Configures cluster mode settings.
+     *
+     * @param clusterMode Whether cluster mode is enabled
+     * @param clusterNodes List of cluster nodes
+     * @param clusterNodeId Cluster node ID
      */
     public void configureClusterMode(boolean clusterMode, List<NacosClusterNode> clusterNodes, String clusterNodeId) {
         if (clusterMode) {
@@ -147,7 +175,9 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置指标监控
+     * Configures metrics monitoring settings.
+     *
+     * @param metricsEnabled Whether metrics are enabled
      */
     public void configureMetrics(boolean metricsEnabled) {
         if (metricsEnabled) {
@@ -162,7 +192,10 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 配置端口（Nacos 3.x 使用新的配置项）
+     * Configures port settings (Nacos 3.x uses new configuration items).
+     *
+     * @param httpPort The HTTP port
+     * @param grpcPort The gRPC port
      */
     public void configurePorts(int httpPort, int grpcPort) {
         if (version.isV3()) {
@@ -175,7 +208,9 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 获取等待策略的检测路径
+     * Gets the wait strategy path for health checking.
+     *
+     * @return The wait strategy path
      */
     public String getWaitStrategyPath() {
         if (version.isV3()) {
@@ -186,7 +221,10 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 辅助方法：设置环境变量
+     * Helper method to set environment variables.
+     *
+     * @param key The environment variable key
+     * @param value The environment variable value
      */
     private void withEnv(String key, String value) {
         if (container != null && value != null) {
@@ -195,21 +233,27 @@ public class NacosEnvironmentConfigurer {
     }
 
     /**
-     * 获取当前版本
+     * Gets the current Nacos version.
+     *
+     * @return The Nacos version
      */
     public NacosVersion getVersion() {
         return version;
     }
 
     /**
-     * 判断是否为 Nacos 3.x
+     * Checks if the Nacos version is 3.x.
+     *
+     * @return true if Nacos version is 3.x, false otherwise
      */
     public boolean isV3() {
         return version.isV3();
     }
 
     /**
-     * 判断是否为 Nacos 2.x
+     * Checks if the Nacos version is 2.x.
+     *
+     * @return true if Nacos version is 2.x, false otherwise
      */
     public boolean isV2() {
         return version.isV2();

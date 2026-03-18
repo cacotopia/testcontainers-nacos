@@ -1,3 +1,10 @@
+/**
+ * A Testcontainers implementation for Nacos service discovery and configuration server.
+ * This abstract class provides a flexible and extensible way to create Nacos containers
+ * with various configurations and features.
+ *
+ * @param <SELF> The type of the subclass extending this container
+ */
 package io.github.cacotopia.testcontainers.nacos;
 
 import com.alibaba.nacos.api.config.ConfigService;
@@ -15,54 +22,148 @@ import java.time.Duration;
 import java.util.*;
 
 public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosContainer<SELF>> extends GenericContainer<SELF> {
-    // Nacos 相关常量
+    /**
+     * Default Nacos Docker image name
+     */
     private static final String NACOS_IMAGE = "nacos/nacos-server";
+
+    /**
+     * Default Nacos version
+     */
     private static final String NACOS_VERSION = "2.2.3";
 
+    /**
+     * Nacos HTTP port
+     */
     private static final int NACOS_PORT_HTTP = 8848;
+
+    /**
+     * Nacos gRPC port
+     */
     private static final int NACOS_PORT_GRPC = 9848;
+
+    /**
+     * Nacos gRPC management port
+     */
     private static final int NACOS_PORT_GRPC_MGMT = 9849;
 
-    // 版本相关
+    /**
+     * Nacos version information
+     */
     private NacosVersion nacosVersion;
+
+    /**
+     * Docker image name
+     */
     private String dockerImageName;
 
-    // 配置属性
+    /**
+     * Nacos username
+     */
     private String username = "nacos";
+
+    /**
+     * Nacos password
+     */
     private String password = "nacos";
+
+    /**
+     * Database configuration
+     */
     private NacosDatabaseConfig databaseConfig = NacosDatabaseConfig.embedded();
+
+    /**
+     * Whether cluster mode is enabled
+     */
     private boolean clusterMode = false;
+
+    /**
+     * List of cluster nodes
+     */
     private List<NacosClusterNode> clusterNodes = new ArrayList<>();
+
+    /**
+     * Custom command parts
+     */
     private String[] customCommandParts;
 
-    // 集群相关
+    /**
+     * Cluster node ID
+     */
     private String clusterNodeId;
+
+    /**
+     * Cluster network for inter-container communication
+     */
     private Network clusterNetwork;
 
-    // 配置管理
+    /**
+     * Nacos namespace
+     */
     private String namespace = "";
+
+    /**
+     * Default config group
+     */
     private String defaultGroup = "DEFAULT_GROUP";
+
+    /**
+     * Initial configs to import on container start
+     */
     private List<NacosConfig> initialConfigs = new ArrayList<>();
 
-    // 服务注册
+    /**
+     * Initial service instances to register on container start
+     */
     private List<NacosServiceInstance> initialServices = new ArrayList<>();
 
-    // 功能开关
+    /**
+     * Whether authentication is enabled
+     */
     private boolean authEnabled = true;
+
+    /**
+     * Whether console is enabled
+     */
     private boolean consoleEnabled = true;
+
+    /**
+     * Whether metrics are enabled
+     */
     private boolean metricsEnabled = false;
+
+    /**
+     * Token expiration time in seconds (default: 5 hours)
+     */
     private int tokenExpiration = 18000; // 默认 5 小时
 
-    // 客户端缓存
+    /**
+     * Nacos client factory
+     */
     private NacosClientFactory clientFactory;
+
+    /**
+     * Config service client
+     */
     private ConfigService configService;
+
+    /**
+     * Naming service client
+     */
     private NamingService namingService;
 
-    // 构造方法
+    /**
+     * Creates a new ExtendableNacosContainer with the default Nacos image and version.
+     */
     public ExtendableNacosContainer() {
         this(NACOS_IMAGE + ":" + NACOS_VERSION);
     }
 
+    /**
+     * Creates a new ExtendableNacosContainer with the specified Docker image name.
+     *
+     * @param dockerImageName The Docker image name to use
+     */
     public ExtendableNacosContainer(String dockerImageName) {
         super(DockerImageName.parse(dockerImageName));
         this.dockerImageName = dockerImageName;
@@ -72,7 +173,9 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         logger().info("Using Nacos version: {}", nacosVersion.getDisplayName());
     }
 
-    // 配置方法
+    /**
+     * Configures the Nacos container with the specified settings.
+     */
     @Override
     protected void configure() {
         List<String> commandParts = new ArrayList<>();
@@ -114,6 +217,12 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         this.clientFactory = new NacosClientFactory(getServiceUrl(), username, password, namespace);
     }
 
+    /**
+     * Called when the container is started.
+     * Imports initial configurations and registers initial services.
+     *
+     * @param containerInfo The container information
+     */
     @Override
     protected void containerIsStarted(InspectContainerResponse containerInfo) {
         super.containerIsStarted(containerInfo);
@@ -128,7 +237,9 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 导入初始配置
+     * Imports initial configurations into Nacos.
+     *
+     * @throws NacosException If an error occurs while importing configs
      */
     private void importInitialConfigs() throws NacosException {
         if (initialConfigs.isEmpty()) {
@@ -143,7 +254,9 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 注册初始服务
+     * Registers initial service instances with Nacos.
+     *
+     * @throws NacosException If an error occurs while registering services
      */
     private void registerInitialServices() throws NacosException {
         if (initialServices.isEmpty()) {
@@ -169,46 +282,65 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 获取 Nacos 版本
+     * Gets the Nacos version.
+     *
+     * @return The Nacos version
      */
     public NacosVersion getNacosVersion() {
         return nacosVersion;
     }
 
     /**
-     * 判断是否为 Nacos 3.x
+     * Checks if the Nacos version is 3.x.
+     *
+     * @return true if Nacos version is 3.x, false otherwise
      */
     public boolean isV3() {
         return nacosVersion != null && nacosVersion.isV3();
     }
 
     /**
-     * 判断是否为 Nacos 2.x
+     * Checks if the Nacos version is 2.x.
+     *
+     * @return true if Nacos version is 2.x, false otherwise
      */
     public boolean isV2() {
         return nacosVersion != null && nacosVersion.isV2();
     }
 
     /**
-     * 获取 Docker 镜像名称
+     * Gets the Docker image name.
+     *
+     * @return The Docker image name
      */
     public String getDockerImageName() {
         return dockerImageName;
     }
 
-    // 公共方法
+    /**
+     * Sets the username for Nacos authentication.
+     *
+     * @param username The username to use
+     * @return This container instance
+     */
     public SELF withUsername(String username) {
         this.username = username;
         return self();
     }
 
+    /**
+     * Sets the password for Nacos authentication.
+     *
+     * @param password The password to use
+     * @return This container instance
+     */
     public SELF withPassword(String password) {
         this.password = password;
         return self();
     }
 
     /**
-     * @deprecated 使用 {@link #withDatabaseConfig(NacosDatabaseConfig)} 替代
+     * @deprecated Use {@link #withDatabaseConfig(NacosDatabaseConfig)} instead
      */
     @Deprecated
     public SELF withDatabaseType(String databaseType) {
@@ -219,7 +351,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 配置数据库
+     * Configures the database for Nacos.
+     *
+     * @param databaseConfig The database configuration
+     * @return This container instance
      */
     public SELF withDatabaseConfig(NacosDatabaseConfig databaseConfig) {
         this.databaseConfig = databaseConfig;
@@ -227,7 +362,14 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 使用外部 MySQL 数据库
+     * Configures Nacos to use an external MySQL database.
+     *
+     * @param host     The MySQL host
+     * @param port     The MySQL port
+     * @param database The database name
+     * @param username The MySQL username
+     * @param password The MySQL password
+     * @return This container instance
      */
     public SELF withExternalMySQL(String host, int port, String database, String username, String password) {
         this.databaseConfig = NacosDatabaseConfig.externalMySQL(host, port, database, username, password);
@@ -235,20 +377,32 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 使用 Testcontainers MySQL 容器
+     * Configures Nacos to use a Testcontainers MySQL container.
+     *
+     * @param mysqlContainer The MySQL container to use
+     * @return This container instance
      */
     public SELF withMySQLContainer(MySQLContainer mysqlContainer) {
         this.databaseConfig = NacosDatabaseConfig.mysqlContainer(mysqlContainer);
         return self();
     }
 
+    /**
+     * Enables or disables cluster mode.
+     *
+     * @param clusterMode true to enable cluster mode, false otherwise
+     * @return This container instance
+     */
     public SELF withClusterMode(boolean clusterMode) {
         this.clusterMode = clusterMode;
         return self();
     }
 
     /**
-     * 配置集群节点列表
+     * Configures the list of cluster nodes.
+     *
+     * @param clusterNodes The list of cluster nodes
+     * @return This container instance
      */
     public SELF withClusterNodes(List<NacosClusterNode> clusterNodes) {
         this.clusterNodes = new ArrayList<>(clusterNodes);
@@ -257,7 +411,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 配置集群节点列表（可变参数）
+     * Configures the list of cluster nodes (varargs).
+     *
+     * @param clusterNodes The cluster nodes
+     * @return This container instance
      */
     public SELF withClusterNodes(NacosClusterNode... clusterNodes) {
         this.clusterNodes = new ArrayList<>(Arrays.asList(clusterNodes));
@@ -266,7 +423,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 设置集群网络（用于多容器集群通信）
+     * Sets the cluster network for inter-container communication.
+     *
+     * @param network The network to use
+     * @return This container instance
      */
     public SELF withClusterNetwork(Network network) {
         this.clusterNetwork = network;
@@ -277,22 +437,32 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 设置集群节点标识
+     * Sets the cluster node ID.
+     *
+     * @param nodeId The node ID
+     * @return This container instance
      */
     public SELF withClusterNodeId(String nodeId) {
         this.clusterNodeId = nodeId;
         return self();
     }
 
+    /**
+     * Sets custom commands to run in the container.
+     *
+     * @param commands The custom commands
+     * @return This container instance
+     */
     public SELF withCustomCommand(String... commands) {
         this.customCommandParts = commands;
         return self();
     }
 
-    // ==================== 配置管理方法 ====================
-
     /**
-     * 设置命名空间
+     * Sets the namespace for Nacos.
+     *
+     * @param namespace The namespace to use
+     * @return This container instance
      */
     public SELF withNamespace(String namespace) {
         this.namespace = namespace;
@@ -300,7 +470,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 设置默认分组
+     * Sets the default config group.
+     *
+     * @param group The default group name
+     * @return This container instance
      */
     public SELF withDefaultGroup(String group) {
         this.defaultGroup = group;
@@ -308,7 +481,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 添加初始配置（容器启动后自动导入）
+     * Adds an initial configuration to import when the container starts.
+     *
+     * @param config The configuration to add
+     * @return This container instance
      */
     public SELF withInitialConfig(NacosConfig config) {
         this.initialConfigs.add(config);
@@ -316,21 +492,33 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 添加初始配置（简化版）
+     * Adds an initial configuration (simplified version).
+     *
+     * @param dataId  The data ID
+     * @param content The configuration content
+     * @return This container instance
      */
     public SELF withInitialConfig(String dataId, String content) {
         return withInitialConfig(new NacosConfig(dataId, defaultGroup, content));
     }
 
     /**
-     * 添加初始配置（带分组）
+     * Adds an initial configuration with a specific group.
+     *
+     * @param dataId  The data ID
+     * @param group   The group name
+     * @param content The configuration content
+     * @return This container instance
      */
     public SELF withInitialConfig(String dataId, String group, String content) {
         return withInitialConfig(new NacosConfig(dataId, group, content));
     }
 
     /**
-     * 批量添加初始配置
+     * Adds multiple initial configurations.
+     *
+     * @param configs The configurations to add
+     * @return This container instance
      */
     public SELF withInitialConfigs(List<NacosConfig> configs) {
         this.initialConfigs.addAll(configs);
@@ -338,17 +526,21 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 从文件导入配置（YAML 格式）
+     * Imports configurations from YAML content.
+     *
+     * @param yamlContent The YAML content
+     * @return This container instance
      */
     public SELF withConfigImportFromYaml(String yamlContent) {
         // TODO: 解析 YAML 并转换为 NacosConfig
         return self();
     }
 
-    // ==================== 服务注册方法 ====================
-
     /**
-     * 添加初始服务实例（容器启动后自动注册）
+     * Adds an initial service instance to register when the container starts.
+     *
+     * @param instance The service instance to add
+     * @return This container instance
      */
     public SELF withInitialService(NacosServiceInstance instance) {
         this.initialServices.add(instance);
@@ -356,24 +548,33 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 添加初始服务实例（简化版）
+     * Adds an initial service instance (simplified version).
+     *
+     * @param serviceName The service name
+     * @param ip          The instance IP
+     * @param port        The instance port
+     * @return This container instance
      */
     public SELF withInitialService(String serviceName, String ip, int port) {
         return withInitialService(new NacosServiceInstance(serviceName, ip, port));
     }
 
     /**
-     * 批量添加初始服务实例
+     * Adds multiple initial service instances.
+     *
+     * @param instances The service instances to add
+     * @return This container instance
      */
     public SELF withInitialServices(List<NacosServiceInstance> instances) {
         this.initialServices.addAll(instances);
         return self();
     }
 
-    // ==================== 功能开关方法 ====================
-
     /**
-     * 启用/禁用认证
+     * Enables or disables authentication.
+     *
+     * @param enabled true to enable authentication, false otherwise
+     * @return This container instance
      */
     public SELF withAuthEnabled(boolean enabled) {
         this.authEnabled = enabled;
@@ -381,7 +582,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 启用/禁用控制台
+     * Enables or disables the console.
+     *
+     * @param enabled true to enable the console, false otherwise
+     * @return This container instance
      */
     public SELF withConsoleEnabled(boolean enabled) {
         this.consoleEnabled = enabled;
@@ -389,7 +593,9 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 启用指标监控
+     * Enables metrics monitoring.
+     *
+     * @return This container instance
      */
     public SELF withMetricsEnabled() {
         this.metricsEnabled = true;
@@ -397,75 +603,146 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 设置 Token 过期时间（秒）
+     * Sets the token expiration time in seconds.
+     *
+     * @param seconds The token expiration time in seconds
+     * @return This container instance
      */
     public SELF withTokenExpiration(int seconds) {
         this.tokenExpiration = seconds;
         return self();
     }
 
-    // ==================== 客户端访问方法 ====================
-
+    /**
+     * Gets the Nacos service URL.
+     *
+     * @return The service URL
+     */
     public String getServiceUrl() {
         return String.format("http://%s:%s/nacos", getHost(), getMappedPort(NACOS_PORT_HTTP));
     }
 
+    /**
+     * Gets the gRPC address for Nacos.
+     *
+     * @return The gRPC address
+     */
     public String getGrpcAddress() {
         return String.format("%s:%s", getHost(), getMappedPort(NACOS_PORT_GRPC));
     }
 
+    /**
+     * Gets the username.
+     *
+     * @return The username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Gets the password.
+     *
+     * @return The password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Gets the database configuration.
+     *
+     * @return The database configuration
+     */
     public NacosDatabaseConfig getDatabaseConfig() {
         return databaseConfig;
     }
 
+    /**
+     * Checks if cluster mode is enabled.
+     *
+     * @return true if cluster mode is enabled, false otherwise
+     */
     public boolean isClusterMode() {
         return clusterMode;
     }
 
+    /**
+     * Gets the list of cluster nodes.
+     *
+     * @return The list of cluster nodes
+     */
     public List<NacosClusterNode> getClusterNodes() {
         return new ArrayList<>(clusterNodes);
     }
 
+    /**
+     * Gets the namespace.
+     *
+     * @return The namespace
+     */
     public String getNamespace() {
         return namespace;
     }
 
+    /**
+     * Gets the default group.
+     *
+     * @return The default group
+     */
     public String getDefaultGroup() {
         return defaultGroup;
     }
 
+    /**
+     * Gets the initial configurations.
+     *
+     * @return The initial configurations
+     */
     public List<NacosConfig> getInitialConfigs() {
         return new ArrayList<>(initialConfigs);
     }
 
+    /**
+     * Gets the initial service instances.
+     *
+     * @return The initial service instances
+     */
     public List<NacosServiceInstance> getInitialServices() {
         return new ArrayList<>(initialServices);
     }
 
+    /**
+     * Checks if authentication is enabled.
+     *
+     * @return true if authentication is enabled, false otherwise
+     */
     public boolean isAuthEnabled() {
         return authEnabled;
     }
 
+    /**
+     * Checks if the console is enabled.
+     *
+     * @return true if the console is enabled, false otherwise
+     */
     public boolean isConsoleEnabled() {
         return consoleEnabled;
     }
 
+    /**
+     * Checks if metrics are enabled.
+     *
+     * @return true if metrics are enabled, false otherwise
+     */
     public boolean isMetricsEnabled() {
         return metricsEnabled;
     }
 
-    // ==================== Nacos 客户端方法 ====================
-
     /**
-     * 获取客户端工厂
+     * Gets the Nacos client factory.
+     *
+     * @return The client factory
      */
     public NacosClientFactory getClientFactory() {
         if (clientFactory == null) {
@@ -475,7 +752,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 获取配置服务客户端
+     * Gets the config service client.
+     *
+     * @return The config service client
+     * @throws NacosException If an error occurs while creating the client
      */
     public ConfigService getConfigService() throws NacosException {
         if (configService == null) {
@@ -485,7 +765,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 获取命名服务客户端
+     * Gets the naming service client.
+     *
+     * @return The naming service client
+     * @throws NacosException If an error occurs while creating the client
      */
     public NamingService getNamingService() throws NacosException {
         if (namingService == null) {
@@ -495,21 +778,29 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * 等待集群健康
+     * Waits for the cluster to become healthy.
+     *
+     * @param timeout The maximum time to wait
      */
     public void waitForClusterHealthy(Duration timeout) {
         // TODO: 实现健康检查等待逻辑
     }
 
     /**
-     * 导出所有配置到指定路径
+     * Exports all configurations to the specified path.
+     *
+     * @param targetPath The target path
+     * @throws NacosException If an error occurs while exporting configs
      */
     public void exportConfigs(String targetPath) throws NacosException {
         // TODO: 实现配置导出逻辑
     }
 
     /**
-     * 创建配置快照
+     * Creates a snapshot of all configurations.
+     *
+     * @return A map of configurations
+     * @throws NacosException If an error occurs while creating the snapshot
      */
     public Map<String, String> createSnapshot() throws NacosException {
         Map<String, String> snapshot = new HashMap<>();

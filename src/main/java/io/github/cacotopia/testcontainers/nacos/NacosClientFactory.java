@@ -8,20 +8,50 @@ import com.alibaba.nacos.api.naming.NamingService;
 import java.util.Properties;
 
 /**
- * Nacos 客户端工厂
- * 用于创建 ConfigService 和 NamingService 客户端
+ * Factory class for creating Nacos client instances.
+ * Used to create ConfigService and NamingService clients with proper configuration.
  */
 public class NacosClientFactory {
 
+    /**
+     * Nacos server address
+     */
     private final String serverAddr;
+
+    /**
+     * Nacos username
+     */
     private final String username;
+
+    /**
+     * Nacos password
+     */
     private final String password;
+
+    /**
+     * Nacos namespace
+     */
     private final String namespace;
 
+    /**
+     * Creates a new NacosClientFactory with the specified server address, username, and password.
+     *
+     * @param serverAddr The Nacos server address
+     * @param username The Nacos username
+     * @param password The Nacos password
+     */
     public NacosClientFactory(String serverAddr, String username, String password) {
         this(serverAddr, username, password, "");
     }
 
+    /**
+     * Creates a new NacosClientFactory with the specified server address, username, password, and namespace.
+     *
+     * @param serverAddr The Nacos server address
+     * @param username The Nacos username
+     * @param password The Nacos password
+     * @param namespace The Nacos namespace
+     */
     public NacosClientFactory(String serverAddr, String username, String password, String namespace) {
         this.serverAddr = serverAddr;
         this.username = username;
@@ -30,7 +60,10 @@ public class NacosClientFactory {
     }
 
     /**
-     * 从 NacosContainer 创建工厂
+     * Creates a NacosClientFactory from a NacosContainer instance.
+     *
+     * @param container The NacosContainer instance
+     * @return A new NacosClientFactory
      */
     public static NacosClientFactory fromContainer(NacosContainer container) {
         return new NacosClientFactory(
@@ -41,7 +74,10 @@ public class NacosClientFactory {
     }
 
     /**
-     * 创建配置服务客户端
+     * Creates a ConfigService client.
+     *
+     * @return A ConfigService instance
+     * @throws NacosException If an error occurs while creating the client
      */
     public ConfigService createConfigService() throws NacosException {
         Properties properties = new Properties();
@@ -55,7 +91,10 @@ public class NacosClientFactory {
     }
 
     /**
-     * 创建命名服务客户端
+     * Creates a NamingService client.
+     *
+     * @return A NamingService instance
+     * @throws NacosException If an error occurs while creating the client
      */
     public NamingService createNamingService() throws NacosException {
         Properties properties = new Properties();
@@ -69,7 +108,9 @@ public class NacosClientFactory {
     }
 
     /**
-     * 创建客户端属性
+     * Creates client properties for Nacos connections.
+     *
+     * @return Properties for Nacos client configuration
      */
     public Properties createProperties() {
         Properties properties = new Properties();
@@ -82,18 +123,38 @@ public class NacosClientFactory {
         return properties;
     }
 
+    /**
+     * Gets the server address.
+     *
+     * @return The server address
+     */
     public String getServerAddr() {
         return serverAddr;
     }
 
+    /**
+     * Gets the username.
+     *
+     * @return The username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Gets the password.
+     *
+     * @return The password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Gets the namespace.
+     *
+     * @return The namespace
+     */
     public String getNamespace() {
         return namespace;
     }
