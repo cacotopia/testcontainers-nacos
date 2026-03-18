@@ -1,0 +1,50 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: CI build
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    paths-ignore:
+      - '.github/**'
+      - 'pom.xml'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: 1
+            classes: "dasniko.testcontainers.keycloak.KeycloakContainerTest"
+          - shard: 2
+            classes: "dasniko.testcontainers.keycloak.KeycloakContainerHttpsTest"
+          - shard: 3
+            classes: "dasniko.testcontainers.keycloak.KeycloakContainerHttpsLegacyTest,dasniko.testcontainers.keycloak.KeycloakContainerOptimizedTest"
+          - shard: 4
+            classes: "dasniko.testcontainers.keycloak.KeycloakContainerExtensionTest,dasniko.testcontainers.keycloak.KeycloakContainerExtensionReuseTest"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Run tests (Shard ${{ matrix.shard }})
+        run: |
+          mvn test -Dtest="${{ matrix.classes }}" \
+                   -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Maven build
+        run: mvn -B package -DskipTests
