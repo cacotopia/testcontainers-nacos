@@ -53,6 +53,12 @@ public class NacosEnvironmentConfigurer {
         withEnv("NACOS_AUTH_TOKEN", "SecretKey012345678901234567890123456789012345678901234567890123456789");
         withEnv("NACOS_AUTH_TOKEN_EXPIRE_SECONDS", String.valueOf(tokenExpiration));
 
+        // Nacos 2.x 服务端身份验证配置（2.2.0+ 必需）
+        if (!version.isV3() && authEnabled) {
+            withEnv("NACOS_CORE_AUTH_SERVER_IDENTITY_KEY", "serverIdentity");
+            withEnv("NACOS_CORE_AUTH_SERVER_IDENTITY_VALUE", "testcontainers");
+        }
+
         // 控制台配置
         if (version.isV3()) {
             // Nacos 3.x 使用新的控制台配置
