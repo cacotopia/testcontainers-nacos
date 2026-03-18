@@ -1,6 +1,6 @@
-# Nacos Testcontainer
+# Testcontainers Nacos
 
-A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](https://www.Nacos.org/) SSO.
+A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](https://nacos.io/) - an easy-to-use dynamic service discovery, configuration and service management platform.
 
 [![GitHub Release](https://img.shields.io/github/v/release/cacotopia/testcontainers-nacos?label=Release)](https://github.com/cacotopia/testcontainers-nacos/releases)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.cacotopia/testcontainers-nacos.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/com.github.cacotopia/testcontainers-nacos)
@@ -8,336 +8,34 @@ A [Testcontainers](https://www.testcontainers.org/) implementation for [Nacos](h
 ![Github Last Commit](https://img.shields.io/github/last-commit/cacotopia/testcontainers-nacos)
 ![License](https://img.shields.io/github/license/cacotopia/testcontainers-nacos?label=License)
 
-[![Nacos Version](https://img.shields.io/badge/Nacos-26.5-blue)](https://www.Nacos.org)
+[![Nacos Version](https://img.shields.io/badge/Nacos-2.x%20%7C%203.x-blue)](https://nacos.io)
 ![Java Version](https://img.shields.io/badge/Java-11-f89820)
 [![GitHub Stars](https://img.shields.io/github/stars/cacotopia/testcontainers-nacos)](https://github.com/cacotopia/testcontainers-nacos/stargazers)
 [![CI build](https://github.com/cacotopia/testcontainers-nacos/actions/workflows/maven.yml/badge.svg)](https://github.com/cacotopia/testcontainers-nacos/actions/workflows/maven.yml)
 
-## IMPORTANT
-
-## How to use
-
-_The `@Container` annotation used here in the readme is from the JUnit 5 support of Testcontainers.
-Please refer to the Testcontainers documentation for more information._
-
-### Default
-
-Simply spin up a default Nacos instance:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer();
-```
-
-### Custom image
-
-Use another Nacos Docker image/version than used in this Testcontainer:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer("quay.io/Nacos/Nacos:26.4");
-```
-
-### Initial admin user credentials
-
-Use different admin credentials than the default internal (`admin`/`admin`) ones:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withAdminUsername("myNacosAdminUser")
-    .withAdminPassword("tops3cr3t");
-```
-
-### Realm Import
-
-Power up a Nacos instance with one or more existing realm JSON config files (from classpath):
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withRealmImportFile("/test-realm.json");
-```
-
-or
-
-```java
-    .withRealmImportFiles("/test-realm-1.json","/test-realm-2.json");
-```
-
-If your realm JSON configuration file includes user definitions - particularly the admin user
-for the master realm - ensure you disable the automatic bootstrapping of the admin user:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withBootstrapAdminDisabled()
-    .withRealmImportFile("/test-realm.json");
-```
-
-To retrieve a working Nacos Admin Client from the container, make sure to override the admin
-credentials to match those in your imported realm JSON configuration file:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withBootstrapAdminDisabled()
-    .withRealmImportFile("/test-realm.json")
-    .withAdminUsername("myNacosAdminUser")
-    .withAdminPassword("tops3cr3t");
-```
-
-### Getting an admin client and other information from the testcontainer
-
-You can get an instance of `org.Nacos.admin.Nacos` admin client directly from the container, using
-
-```java
-org.Nacos.admin.Nacos NacosAdmin = NacosContainer.getNacosAdminClient();
-```
-
-The admin client is configured with current admin credentials.
-
-> The `org.Nacos:Nacos-admin-client` package is now a transitive dependency of this project, ready to be used by
-> you in your tests, no more need to add it on your own.
-
-You can also obtain several properties from the Nacos container:
-
-```java
-String authServerUrl = Nacos.getAuthServerUrl();
-String adminUsername = Nacos.getAdminUsername();
-String adminPassword = Nacos.getAdminPassword();
-```
-
-with these properties, you can create e.g. a custom `org.Nacos.admin.client.Nacos` object to connect to the
-container and do optional further configuration:
-
-```java
-Nacos NacosAdminClient = NacosBuilder.builder()
-    .serverUrl(Nacos.getAuthServerUrl())
-    .realm(NacosContainer.MASTER_REALM)
-    .clientId(NacosContainer.ADMIN_CLI_CLIENT)
-    .username(Nacos.getAdminUsername())
-    .password(Nacos.getAdminPassword())
-    .build();
-```
-
-### Context Path
-
-As Nacos comes with the default context path `/`, you can set your custom context path, e.g. for compatibility
-reasons to previous versions, with:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withContextPath("/auth");
-```
-
-### Management Port
-
-Starting from Nacos version 25.0.0, Nacos will propagate `/health` and `/metrics` on "Management Port",
-see [Configuraing the Management Interface](https://www.Nacos.org/server/management-interface)
-and [Migration Guide](https://www.Nacos.org/docs/latest/upgrading/index.html#management-port-for-metrics-and-health-endpoints)
-
-```java
-NacosContainer Nacos = new NacosContainer().withEnabledMetrics()
-Nacos.
-
-start();
-Nacos.
-
-getMgmtServerUrl();
-```
-
-### Memory Settings
-
-As of Nacos 24 the container doesn't use an absolute amount of memory, but a relative percentage of the overall
-available memory to the
-container, [see also here](https://www.Nacos.org/server/containers#_specifying_different_memory_settings).
-
-This testcontainer has an initial memory setting of
-
-    JAVA_OPTS_KC_HEAP="-XX:InitialRAMPercentage=1 -XX:MaxRAMPercentage=5"
-
-to not overload your environment.
-You can override this settng with the `withRamPercentage(initial, max)` method:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withRamPercentage(50, 70);
-```
-
-## TLS (SSL) Usage
-
-You have three options to use HTTPS/TLS secured communication with your Nacos Testcontainer.
-
-### Built-in TLS Keystore
-
-This Nacos Testcontainer comes with built-in TLS certificate (`tls.crt`), key (`tls.key`) and Java KeyStore (
-`tls.jks`) files, located in the `resources` folder.
-You can use this configuration by only configuring your testcontainer like this:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer().useTls();
-```
-
-The password for the provided Java KeyStore file is `changeit`.
-See also [
-`NacosContainerHttpsTest.shouldStartNacosWithProvidedTlsKeystore`](./src/test/java/dasniko/testcontainers/Nacos/NacosContainerHttpsTest.java#L39).
-
-The method `getAuthServerUrl()` will then return the HTTPS url.
-
-### Custom TLS Cert and Key
-
-Of course you can also provide your own certificate and key file for usage in this Testcontainer:
-
-```java
-
-@Container
-private NacosContainer Nacos = new NacosContainer()
-    .useTls("your_custom.crt", "your_custom.key");
-```
-
-See also [
-`NacosContainerHttpsTest.shouldStartNacosWithCustomTlsCertAndKey`](./src/test/java/dasniko/testcontainers/Nacos/NacosContainerHttpsTest.java#L47).
-
-The method getAuthServerUrl() will also return the HTTPS url.
-
-### Custom TLS Keystore
-
-Last but not least, you can also provide your own keystore file for usage in this Testcontainer:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .useTlsKeystore("your_custom.jks", "password_for_your_custom_keystore");
-```
-
-See also [
-`NacosContainerHttpsTest.shouldStartNacosWithCustomTlsKeystore`](./src/test/java/dasniko/testcontainers/Nacos/NacosContainerHttpsTest.java#L55).
-
-The method `getAuthServerUrl()` will also return the HTTPS url.
-
 ## Features
 
-You can enable and disable features on your Testcontainer:
+- **Support for Nacos 2.x and 3.x** (automatic version detection and configuration adaptation)
+- Standalone and cluster mode
+- **External MySQL database support** (Testcontainers MySQL or external instance)
+- **Multi-node cluster management** with `NacosCluster`
+- Configurable authentication credentials
+- Exposed ports: HTTP (8848), gRPC (9848), gRPC management (9849)
+- Built-in wait strategy for container readiness
+- Compatible with Spring Cloud Nacos
 
-```java
+## Requirements
 
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withFeaturesEnabled("docker", "scripts", "...")
-    .withFeaturesDisabled("authorization", "impersonation", "...");
-```
+- Java 11 or higher
+- Docker environment
 
-## Custom CLI Config arguments
+## Installation
 
-All default configurations in this Testcontainer is done through environment variables.
-You can overwrite and/or add config settings on command-line-level (cli args) with this method:
+The release versions of this project are available at [Maven Central](https://central.sonatype.com/artifact/com.github.cacotopia/testcontainers-nacos).
 
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withCustomCommand("--hostname=Nacos.local");
-```
-
-A warning will be printed to the log output when custom command parts are being used, so that you are aware that you are
-responsible on your own for proper execution of this container.
-
-## Starting in production mode
-
-By default, the container is started in dev mode (`start-dev`).
-If needed you can enable production mode:
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer()
-    .withProductionMode();
-```
-
-### Optimized flag
-
-It is possible that you use your own pre-build image with the `--optimized` flag.
-Setting this option will implicitly enable production mode!
-
-```java
-
-@Container
-NacosContainer Nacos = new NacosContainer("<YOUR_IMAGE>" + ":<YOUR_TAG>")
-    .withOptimizedFlag();
-```
-
-NOTE: If you don't enable the health endpoint, the container will not be healthy.
-In this case please provide your own waitStrategy.
-Check out the tests at [
-`NacosContainerOptimizedTest`](./src/test/java/com/github/cacotopia/testcontainers/nacos/NacosContainerOptimizedTest.java).
-
-## Testing Custom Extensions
-
-To ease extension testing, you can tell the Nacos Testcontainer to detect extensions in a given classpath folder.
-This allows to test extensions directly in the same module without a packaging step.
-
-If you have your Nacos extension code in the `src/main/java` folder, then the resulting classes will be generated to
-the `target/classes` folder.
-To test your extensions you just need to tell `NacosContainer` to consider extensions from the `target/classes`
-folder.
-
-Nacos Testcontainer will then dynamically generate a packaged jar file with the extension code that is then picked up
-by Nacos.
-
-```java
-NacosContainer Nacos = new NacosContainer()
-    .withProviderClassesFrom("target/classes");
-```
-
-For your convenience, there's now (since 3.3) a default method, which yields to `target/classes` internally:
-
-```java
-NacosContainer Nacos = new NacosContainer()
-    .withDefaultProviderClasses();
-```
-
-
-### Dependencies & 3rd-party Libraries
-
-If you need to provide any 3rd-party dependency or library, you can do this with
-
-```java
-List<File> libs = ...;
-NacosContainer Nacos = new NacosContainer()
-    .withProviderLibsFrom(libs);
-```
-
-You have to provide a list of resolvable `File`s.
-
-#### TIP
-
-
-### Remote Debugger Support
-
-
-## Setup
-
-The release versions of this project are available
-at [Maven Central](https://central.sonatype.com/artifact/com.github.cacotopia/testcontainers-nacos).
-Simply put the dependency coordinates to your `pom.xml` (or something similar, if you use e.g. Gradle or something
-else):
+### Maven
 
 ```xml
-
 <dependency>
     <groupId>com.github.cacotopia</groupId>
     <artifactId>testcontainers-nacos</artifactId>
@@ -346,44 +44,497 @@ else):
 </dependency>
 ```
 
-For a version overview, see [here](versions.md).
+### Gradle
 
-## Usage in your application framework tests
+```groovy
+testImplementation 'com.github.cacotopia:testcontainers-nacos:VERSION'
+```
 
-> This info is not specific to the Nacos Testcontainer, but using Testcontainers in general.
+For a version overview, see [versions.md](versions.md).
 
-I mention it here, as I see people asking again and again on how to use it in their test setup, when they think they
-need to specify a fixed port in their properties or YAML files...  
-You don't have to!  
-But you have to read the Testcontainers docs and the docs of your application framework on testing resources!!
+## Usage
 
-### Spring (Boot)
+### Basic Usage
 
-Dynamic context configuration with context initializers is your friend.
-In particular, look for `@ContextConfiguration` and `ApplicationContextInitializer<ConfigurableApplicationContext>`:
+Simply spin up a default Nacos instance:
 
-* https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#spring-testing-annotation-contextconfiguration
-* https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#testcontext-ctx-management-initializers
+```java
+@Container
+NacosContainer nacos = new NacosContainer();
+```
 
-### Quarkus
+### Nacos Version Selection
 
-Read the docs about the Quarkus Test Resources and use `@QuarkusTestResource` with `QuarkusTestResourceLifecycleManager`
+#### Using Nacos 2.x (Default)
 
-* https://quarkus.io/guides/getting-started-testing#quarkus-test-resource
+```java
+// Use default version (2.2.3)
+@Container
+NacosContainer nacos = new NacosContainer();
 
-### Others
+// Use specific 2.x version
+@Container
+NacosContainer nacos = new NacosContainer("nacos/nacos-server:2.5.0");
 
-Consult the docs of your application framework testing capabilities on how to dynamically configure your stack for
-testing!
+// Use factory method
+@Container
+NacosContainer nacos = NacosContainer.v2();  // Latest 2.x
+@Container
+NacosContainer nacos = NacosContainer.v2("2.3.0");  // Specific version
+```
 
-## YouTube Videos about Nacos Testcontainers
+#### Using Nacos 3.x
+
+```java
+// Use Nacos 3.0.0
+@Container
+NacosContainer nacos = NacosContainer.v3();
+
+// Use specific 3.x version
+@Container
+NacosContainer nacos = NacosContainer.v3("3.0.1");
+
+// Or use image name directly
+@Container
+NacosContainer nacos = new NacosContainer("nacos/nacos-server:3.0.0");
+```
+
+The container automatically detects the Nacos version and applies the appropriate configuration (environment variables, database settings, cluster mode, etc.).
+
+### Configuration Options
+
+#### Custom Credentials
+
+Override the default credentials (`nacos`/`nacos`):
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withUsername("admin")
+    .withPassword("secret");
+```
+
+#### External MySQL Database
+
+Use an external MySQL database instead of the embedded one:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withExternalMySQL("mysql-host", 3306, "nacos_db", "nacos", "nacos_password");
+```
+
+Or use a Testcontainers MySQL container:
+
+```java
+@Container
+MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+    .withDatabaseName("nacos")
+    .withUsername("nacos")
+    .withPassword("nacos");
+
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withMySQLContainer(mysql);
+```
+
+#### Cluster Mode (Single Node)
+
+Enable cluster mode on a single node (default: standalone):
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withClusterMode(true);
+```
+
+#### Custom Command Arguments
+
+Add custom JVM or Nacos command line arguments:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withCustomCommand("-Dnacos.core.auth.enabled=true");
+```
+
+### Accessing Container Information
+
+Retrieve the service URL and credentials after the container starts:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer();
+
+@BeforeEach
+void setUp() {
+    String serviceUrl = nacos.getServiceUrl();  // e.g., http://localhost:12345/nacos
+    String username = nacos.getUsername();      // nacos
+    String password = nacos.getPassword();      // nacos
+}
+```
+
+### Complete JUnit 5 Example
+
+```java
+@Testcontainers
+class NacosIntegrationTest {
+
+    @Container
+    static NacosContainer nacos = new NacosContainer()
+        .withUsername("test")
+        .withPassword("test123");
+
+    @Test
+    void testNacosConnection() {
+        String serviceUrl = nacos.getServiceUrl();
+        // Use the URL to connect to Nacos
+        assertThat(serviceUrl).startsWith("http://");
+    }
+}
+```
+
+### Multi-Node Cluster Example
+
+Create a 3-node Nacos cluster with embedded database:
+
+```java
+@Testcontainers
+class NacosClusterTest {
+
+    static NacosCluster cluster = NacosCluster.builder()
+        .withNodeCount(3)
+        .build();
+
+    @BeforeAll
+    static void startCluster() {
+        cluster.start();
+    }
+
+    @AfterAll
+    static void stopCluster() {
+        cluster.stop();
+    }
+
+    @Test
+    void testClusterConnection() {
+        // Get the primary node URL
+        String primaryUrl = cluster.getPrimaryServiceUrl();
+        assertThat(primaryUrl).startsWith("http://");
+        
+        // Get all node URLs
+        List<String> urls = cluster.getServiceUrls();
+        assertThat(urls).hasSize(3);
+    }
+}
+```
+
+### Cluster with MySQL Example
+
+Create a cluster with MySQL as the shared database:
+
+```java
+@Testcontainers
+class NacosClusterWithMySQLTest {
+
+    @Container
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+        .withDatabaseName("nacos")
+        .withUsername("nacos")
+        .withPassword("nacos");
+
+    static NacosCluster cluster;
+
+    @BeforeAll
+    static void startCluster() {
+        cluster = NacosCluster.builder()
+            .withNodeCount(3)
+            .withMySQLContainer(mysql)
+            .build();
+        cluster.start();
+    }
+
+    @AfterAll
+    static void stopCluster() {
+        if (cluster != null) {
+            cluster.stop();
+        }
+    }
+
+    @Test
+    void testClusterWithMySQL() {
+        String primaryUrl = cluster.getPrimaryServiceUrl();
+        // Test cluster functionality
+    }
+}
+```
+
+### Configuration Import Example
+
+Pre-load configurations when the container starts:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withInitialConfig("application.properties", "server.port=8080")
+    .withInitialConfig("app-config", "TEST_GROUP", "key=value")
+    .withNamespace("test-namespace");
+```
+
+### Service Registration Example
+
+Pre-register services when the container starts:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer()
+    .withInitialService("order-service", "192.168.1.10", 8080)
+    .withInitialService(new NacosServiceInstance("user-service", "192.168.1.11", 8081)
+        .withMetadata("version", "v1.0")
+        .withMetadata("region", "beijing"));
+```
+
+### Using Nacos Client Example
+
+Access Nacos Java SDK directly from the container:
+
+```java
+@Container
+NacosContainer nacos = new NacosContainer();
+
+@Test
+void testWithNacosClient() throws NacosException {
+    // Get ConfigService
+    ConfigService configService = nacos.getConfigService();
+    configService.publishConfig("test", "DEFAULT_GROUP", "content");
+    
+    // Get NamingService
+    NamingService namingService = nacos.getNamingService();
+    List<Instance> instances = namingService.getAllInstances("my-service");
+    
+    // Or use the client factory
+    NacosClientFactory factory = nacos.getClientFactory();
+    Properties props = factory.createProperties();
+}
+```
+
+
+## Framework Integration
+
+### Spring Boot
+
+Use `@DynamicPropertySource` to inject Nacos configuration into your Spring tests:
+
+```java
+@SpringBootTest
+@Testcontainers
+class SpringBootNacosTest {
+
+    @Container
+    static NacosContainer nacos = new NacosContainer()
+        .withUsername("nacos")
+        .withPassword("nacos");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.cloud.nacos.discovery.server-addr", nacos::getServiceUrl);
+        registry.add("spring.cloud.nacos.config.server-addr", nacos::getServiceUrl);
+        registry.add("spring.cloud.nacos.config.import-check.enabled", () -> "false");
+        registry.add("spring.cloud.nacos.username", nacos::getUsername);
+        registry.add("spring.cloud.nacos.password", nacos::getPassword);
+    }
+
+    @Test
+    void contextLoads() {
+        // Your test code
+    }
+}
+```
+
+### Other Frameworks
+
+For other frameworks, use the container's `getServiceUrl()`, `getUsername()`, and `getPassword()` methods to configure your application dynamically. Refer to your framework's testing documentation for dynamic configuration options.
+
+## API Reference
+
+### NacosContainer Constructor Methods
+
+| Method | Description |
+|--------|-------------|
+| `NacosContainer()` | Create with default image `nacos/nacos-server:2.2.3` |
+| `NacosContainer(String dockerImageName)` | Create with custom Docker image |
+
+### NacosContainer Configuration Methods
+
+| Method | Description | Default |
+|--------|-------------|---------|
+| `withUsername(String username)` | Set Nacos username | `nacos` |
+| `withPassword(String password)` | Set Nacos password | `nacos` |
+| `withDatabaseType(String type)` | Set database type (deprecated) | `embedded` |
+| `withDatabaseConfig(NacosDatabaseConfig config)` | Set database configuration | embedded |
+| `withExternalMySQL(String host, int port, String db, String user, String pwd)` | Use external MySQL | - |
+| `withMySQLContainer(MySQLContainer<?> mysql)` | Use Testcontainers MySQL | - |
+| `withClusterMode(boolean enabled)` | Enable cluster mode | `false` |
+| `withClusterNodes(NacosClusterNode... nodes)` | Configure cluster nodes | - |
+| `withClusterNetwork(Network network)` | Set Docker network for cluster | - |
+| `withCustomCommand(String... commands)` | Add custom command arguments | - |
+| `withNamespace(String namespace)` | Set Nacos namespace | `""` |
+| `withDefaultGroup(String group)` | Set default config group | `DEFAULT_GROUP` |
+| `withInitialConfig(NacosConfig config)` | Add initial configuration | - |
+| `withInitialConfig(String dataId, String content)` | Add initial config (simplified) | - |
+| `withInitialService(NacosServiceInstance instance)` | Add initial service | - |
+| `withInitialService(String name, String ip, int port)` | Add initial service (simplified) | - |
+| `withAuthEnabled(boolean enabled)` | Enable/disable authentication | `true` |
+| `withConsoleEnabled(boolean enabled)` | Enable/disable console | `true` |
+| `withMetricsEnabled()` | Enable Prometheus metrics | `false` |
+| `withTokenExpiration(int seconds)` | Set auth token expiration | `18000` |
+
+### NacosContainer Accessor Methods
+
+| Method | Description |
+|--------|-------------|
+| `getServiceUrl()` | Get the Nacos service URL |
+| `getGrpcAddress()` | Get the gRPC address |
+| `getUsername()` | Get the configured username |
+| `getPassword()` | Get the configured password |
+| `getNamespace()` | Get the configured namespace |
+| `getDefaultGroup()` | Get the default group |
+| `getDatabaseConfig()` | Get the database configuration |
+| `isClusterMode()` | Check if cluster mode is enabled |
+| `getClusterNodes()` | Get the list of cluster nodes |
+| `isAuthEnabled()` | Check if authentication is enabled |
+| `isConsoleEnabled()` | Check if console is enabled |
+| `isMetricsEnabled()` | Check if metrics are enabled |
+
+### NacosClient Methods
+
+| Method | Description |
+|--------|-------------|
+| `getClientFactory()` | Get the NacosClientFactory |
+| `getConfigService()` | Get ConfigService (Java SDK) |
+| `getNamingService()` | Get NamingService (Java SDK) |
+| `exportConfigs(String path)` | Export all configs to file |
+| `createSnapshot()` | Create config snapshot |
+| `waitForClusterHealthy(Duration timeout)` | Wait for cluster health |
+
+### Version Detection Methods
+
+| Method | Description |
+|--------|-------------|
+| `getNacosVersion()` | Get the detected Nacos version |
+| `isV2()` | Check if using Nacos 2.x |
+| `isV3()` | Check if using Nacos 3.x |
+| `getDockerImageName()` | Get the Docker image name |
+
+### NacosCluster (Multi-Node Cluster Management)
+
+| Method | Description |
+|--------|-------------|
+| `NacosCluster.builder()` | Create a cluster builder |
+| `builder.withNodeCount(int count)` | Set number of nodes (default: 3) |
+| `builder.withMySQLContainer(MySQLContainer)` | Use MySQL for shared storage |
+| `builder.withNacosImage(String image)` | Set custom Nacos image |
+| `cluster.start()` | Start all cluster nodes |
+| `cluster.stop()` | Stop all cluster nodes |
+| `cluster.getNodes()` | Get all node containers |
+| `cluster.getPrimaryNode()` | Get the first node |
+| `cluster.getNode(int index)` | Get node by index |
+| `cluster.getPrimaryServiceUrl()` | Get primary node URL |
+| `cluster.getServiceUrls()` | Get all node URLs |
+
+## Exposed Ports
+
+| Port | Description |
+|------|-------------|
+| 8848 | HTTP API and Console |
+| 9848 | gRPC client communication |
+| 9849 | gRPC server internal communication |
+
+## Architecture
+
+### Standalone Mode with Embedded Database
+
+```
+┌─────────────────┐
+│  NacosContainer │
+│  (Standalone)   │
+│  - Embedded DB  │
+└─────────────────┘
+```
+
+### Standalone Mode with External MySQL
+
+```
+┌─────────────────┐      ┌─────────────┐
+│  NacosContainer │──────│   MySQL     │
+│  (Standalone)   │      │  (External) │
+│  - MySQL Config │      └─────────────┘
+└─────────────────┘
+```
+
+### Cluster Mode with NacosCluster
+
+```
+┌─────────────────┐
+│  NacosCluster   │
+│  (3 nodes)      │
+├─────────────────┤
+│ ┌─────────────┐ │
+│ │  Nacos-1    │ │◄── Primary Node
+│ │  (Leader)   │ │
+│ └─────────────┘ │
+│ ┌─────────────┐ │
+│ │  Nacos-2    │ │
+│ │  (Follower) │ │
+│ └─────────────┘ │
+│ ┌─────────────┐ │
+│ │  Nacos-3    │ │
+│ │  (Follower) │ │
+│ └─────────────┘ │
+└─────────────────┘
+```
+
+### Cluster Mode with Shared MySQL
+
+```
+         ┌─────────────┐
+         │    MySQL    │
+         │   (Shared)  │
+         └──────┬──────┘
+                │
+    ┌───────────┼───────────┐
+    │           │           │
+┌───┴───┐   ┌───┴───┐   ┌───┴───┐
+│Nacos-1│   │Nacos-2│   │Nacos-3│
+│(Node) │   │(Node) │   │(Node) │
+└───────┘   └───────┘   └───────┘
+```
+
+## Version Compatibility
+
+### Nacos 2.x vs 3.x Configuration Differences
+
+The container automatically handles the following version differences:
+
+| Feature | Nacos 2.x | Nacos 3.x |
+|---------|-----------|-----------|
+| Database Type | `SPRING_DATASOURCE_PLATFORM` | `spring.sql.init.platform` |
+| MySQL Host | `MYSQL_SERVICE_HOST` | `db.url.0` |
+| MySQL Port | `MYSQL_SERVICE_PORT` | `db.url.0` (in URL) |
+| Cluster Mode | `NACOS_MODE=cluster` | `nacos.standalone=false` |
+| Cluster Nodes | `NACOS_SERVERS` | `nacos.member.list` |
+| Server IP | `NACOS_SERVER_IP` | `nacos.server.ip` |
+| Standalone Mode | `NACOS_MODE=standalone` | `nacos.standalone=true` |
+
+### Tested Versions
+
+- Nacos 2.2.3, 2.3.0, 2.4.0, 2.5.0
+- Nacos 3.0.0, 3.0.1
 
 ## Credits
 
-Many thanks to the creators and maintainers of [Testcontainers](https://www.testcontainers.org/).
-You do an awesome job!
-
-Same goes to the whole [Nacos](https://www.nacos.io/) team!
+- [Testcontainers](https://www.testcontainers.org/) - The testing framework that makes this possible
+- [Nacos](https://nacos.io/) - The dynamic service discovery and configuration platform
 
 ## License
 
