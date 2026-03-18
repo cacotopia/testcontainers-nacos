@@ -86,7 +86,7 @@ public class NacosConfigManager {
             }
 
             @Override
-            public Executor getExecutor() {
+            public java.util.concurrent.Executor getExecutor() {
                 return null;
             }
         });
@@ -149,7 +149,7 @@ public class NacosConfigManager {
     }
 }
 
-// Needed for the Listener interface
-interface Executor {
-    void execute(Runnable command);
-}
+//// Needed for the Listener interface
+//interface Executor {
+//    void execute(Runnable command);
+//}

@@ -1,8 +1,6 @@
-package io.github.cacotopia.testcontainers.nacos.extensions;
+package io.github.cacotopia.testcontainers.nacos;
 
-import io.github.cacotopia.testcontainers.nacos.NacosContainer;
-import io.github.cacotopia.testcontainers.nacos.NacosConfig;
-import io.github.cacotopia.testcontainers.nacos.NacosServiceInstance;
+import io.github.cacotopia.testcontainers.nacos.extensions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 

@@ -1,4 +1,4 @@
-package io.github.cacotopia.testcontainers.nacos.extensions;
+package io.github.cacotopia.testcontainers.nacos;
 
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;

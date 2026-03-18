@@ -1,12 +1,17 @@
 package io.github.cacotopia.testcontainers.nacos.extensions;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.model.ContainerNetwork;
+import com.github.dockerjava.api.model.Frame;
 import io.github.cacotopia.testcontainers.nacos.NacosContainer;
 import io.github.cacotopia.testcontainers.nacos.NacosCluster;
 import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container;
+
+import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * Nacos fault simulator for testing fault tolerance scenarios.
@@ -89,7 +94,34 @@ public class NacosFaultSimulator {
                 .withAttachStderr(true)
                 .exec();
 
-        dockerClient.execStartCmd(exec.getId()).exec();
+        ResultCallback<Frame> callback = new ResultCallback<Frame>() {
+            @Override
+            public void onStart(Closeable closeable) {
+
+            }
+
+            @Override
+            public void onNext(Frame object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+
+        dockerClient.execStartCmd(exec.getId()).exec(callback);
     }
 
     /**
@@ -111,8 +143,33 @@ public class NacosFaultSimulator {
                 .withAttachStdout(true)
                 .withAttachStderr(true)
                 .exec();
+        ResultCallback<Frame> callback = new ResultCallback<Frame>() {
+            @Override
+            public void onStart(Closeable closeable) {
 
-        dockerClient.execStartCmd(exec.getId()).exec();
+            }
+
+            @Override
+            public void onNext(Frame object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+        dockerClient.execStartCmd(exec.getId()).exec(callback);
     }
 
     /**
@@ -135,8 +192,33 @@ public class NacosFaultSimulator {
                 .withAttachStdout(true)
                 .withAttachStderr(true)
                 .exec();
+        ResultCallback<Frame> callback = new ResultCallback<Frame>() {
+            @Override
+            public void onStart(Closeable closeable) {
 
-        dockerClient.execStartCmd(exec.getId()).exec();
+            }
+
+            @Override
+            public void onNext(Frame object) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+        dockerClient.execStartCmd(exec.getId()).exec(callback);
     }
 
     /**

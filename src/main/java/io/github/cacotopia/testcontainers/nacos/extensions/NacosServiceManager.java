@@ -1,7 +1,6 @@
 package io.github.cacotopia.testcontainers.nacos.extensions;
 
 import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.listener.NamingEventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
@@ -133,10 +132,10 @@ public class NacosServiceManager {
         CountDownLatch latch = new CountDownLatch(1);
         ServiceInfo[] serviceInfoHolder = new ServiceInfo[1];
 
-        namingService.subscribe(serviceName, event -> {
-            serviceInfoHolder[0] = event.getServiceInfo();
-            latch.countDown();
-        });
+//        namingService.subscribe(serviceName, event -> {
+//            serviceInfoHolder[0] = event();
+//            latch.countDown();
+//        });
 
         boolean success = latch.await(timeoutSeconds, TimeUnit.SECONDS);
         if (!success) {
