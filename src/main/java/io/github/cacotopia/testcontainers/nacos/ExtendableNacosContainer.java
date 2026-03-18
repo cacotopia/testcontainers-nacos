@@ -1,10 +1,3 @@
-/**
- * A Testcontainers implementation for Nacos service discovery and configuration server.
- * This abstract class provides a flexible and extensible way to create Nacos containers
- * with various configurations and features.
- *
- * @param <SELF> The type of the subclass extending this container
- */
 package io.github.cacotopia.testcontainers.nacos;
 
 import com.alibaba.nacos.api.config.ConfigService;
@@ -21,6 +14,13 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.*;
 
+/**
+ * A Testcontainers implementation for Nacos service discovery and configuration server.
+ * This abstract class provides a flexible and extensible way to create Nacos containers
+ * with various configurations and features.
+ *
+ * @param <SELF> The type of the subclass extending this container
+ */
 public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosContainer<SELF>> extends GenericContainer<SELF> {
     /**
      * Default Nacos Docker image name
@@ -340,6 +340,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
+     * @param databaseType The databaseType to use
+     * @return This container instance
      * @deprecated Use {@link #withDatabaseConfig(NacosDatabaseConfig)} instead
      */
     @Deprecated

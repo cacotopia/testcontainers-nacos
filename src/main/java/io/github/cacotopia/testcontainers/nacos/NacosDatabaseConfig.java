@@ -13,9 +13,18 @@ public class NacosDatabaseConfig {
      * Database type enum
      */
     public enum DatabaseType {
-        EMBEDDED,      // Embedded database (default)
-        MYSQL_CONTAINER, // Testcontainers MySQL container
-        EXTERNAL_MYSQL  // External MySQL instance
+        /**
+         * Embedded database (default)
+         */
+        EMBEDDED,
+        /**
+         * Testcontainers MySQL container
+         */
+        MYSQL_CONTAINER,
+        /**
+         * External MySQL instance
+         */
+        EXTERNAL_MYSQL
     }
 
     /**
@@ -80,8 +89,8 @@ public class NacosDatabaseConfig {
     /**
      * Creates an external MySQL configuration.
      *
-     * @param host The MySQL host
-     * @param port The MySQL port
+     * @param host     The MySQL host
+     * @param port     The MySQL port
      * @param database The database name
      * @param username The MySQL username
      * @param password The MySQL password
@@ -120,9 +129,9 @@ public class NacosDatabaseConfig {
      * Creates a configuration using Testcontainers MySQL container (simplified version).
      *
      * @param mysqlImage The MySQL Docker image
-     * @param database The database name
-     * @param username The MySQL username
-     * @param password The MySQL password
+     * @param database   The database name
+     * @param username   The MySQL username
+     * @param password   The MySQL password
      * @return A new NacosDatabaseConfig instance with MySQL container
      */
     public static NacosDatabaseConfig mysqlContainer(String mysqlImage, String database, String username, String password) {
