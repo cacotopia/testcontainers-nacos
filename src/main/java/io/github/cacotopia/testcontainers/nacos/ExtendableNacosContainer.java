@@ -12,6 +12,10 @@ import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 
@@ -176,7 +180,57 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
 
     /**
      * Configures the Nacos container with the specified settings.
+     */}
+
+    /**
+     * Starts the container.
+     *
+     * @throws IllegalStateException if the container cannot be started
      */
+    @Override
+    public void start() {
+        if (databaseConfig != null && !databaseConfig.isEmbedded()) {
+            try {
+                // Initialize database schema
+                NacosDatabaseInitializer.initialize(databaseConfig);
+            } catch (SQLException | IOException e) {
+                throw new IllegalStateException("Failed to initialize database", e);
+            }
+            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
+                databaseConfig.getMysqlContainer().start();
+            }
+            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
+                databaseConfig.getPostgresqlContainer().start();
+            }
+        }
+        super.start();
+    }
+}
+
+    /**
+     * Starts the container.
+     *
+     * @throws IllegalStateException if the container cannot be started
+     */
+    @Override
+    public void start() {
+        if (databaseConfig != null && !databaseConfig.isEmbedded()) {
+            try {
+                // Initialize database schema
+                NacosDatabaseInitializer.initialize(databaseConfig);
+            } catch (SQLException | IOException e) {
+                throw new IllegalStateException("Failed to initialize database", e);
+            }
+            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
+                databaseConfig.getMysqlContainer().start();
+            }
+            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
+                databaseConfig.getPostgresqlContainer().start();
+            }
+        }
+        super.start();
+    }
+
     @Override
     protected void configure() {
         List<String> commandParts = new ArrayList<>();
