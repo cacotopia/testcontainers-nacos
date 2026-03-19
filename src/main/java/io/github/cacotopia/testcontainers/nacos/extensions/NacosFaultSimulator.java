@@ -19,8 +19,14 @@ import java.io.IOException;
  */
 public class NacosFaultSimulator {
 
+    /**
+     * The Docker client used to interact with the Docker daemon.
+     */
     private final DockerClient dockerClient;
 
+    /**
+     * Constructs a new NacosFaultSimulator instance.
+     */
     public NacosFaultSimulator() {
         this.dockerClient = DockerClientFactory.instance().client();
     }
@@ -48,35 +54,35 @@ public class NacosFaultSimulator {
     /**
      * Simulate network partition by disconnecting a container from the network.
      *
-     * @param container The Nacos container to disconnect
+     * @param container   The Nacos container to disconnect
      * @param networkName The network name to disconnect from
      */
     public void simulateNetworkPartition(NacosContainer container, String networkName) {
         String containerId = container.getContainerId();
         dockerClient.disconnectFromNetworkCmd()
-                .withContainerId(containerId)
-                .withNetworkId(networkName)
-                .exec();
+            .withContainerId(containerId)
+            .withNetworkId(networkName)
+            .exec();
     }
 
     /**
      * Simulate network recovery by reconnecting a container to the network.
      *
-     * @param container The Nacos container to reconnect
+     * @param container   The Nacos container to reconnect
      * @param networkName The network name to reconnect to
      */
     public void simulateNetworkRecovery(NacosContainer container, String networkName) {
         String containerId = container.getContainerId();
         dockerClient.connectToNetworkCmd()
-                .withContainerId(containerId)
-                .withNetworkId(networkName)
-                .exec();
+            .withContainerId(containerId)
+            .withNetworkId(networkName)
+            .exec();
     }
 
     /**
      * Simulate network latency for a container.
      *
-     * @param container The Nacos container to add latency to
+     * @param container    The Nacos container to add latency to
      * @param milliseconds The latency in milliseconds
      */
     public void simulateNetworkLatency(NacosContainer container, int milliseconds) {
@@ -84,15 +90,15 @@ public class NacosFaultSimulator {
 
         // Use tc (traffic control) to add latency
         String[] cmd = {
-                "sh", "-c",
-                "tc qdisc add dev eth0 root netem delay " + milliseconds + "ms"
+            "sh", "-c",
+            "tc qdisc add dev eth0 root netem delay " + milliseconds + "ms"
         };
 
         ExecCreateCmdResponse exec = dockerClient.execCreateCmd(containerId)
-                .withCmd(cmd)
-                .withAttachStdout(true)
-                .withAttachStderr(true)
-                .exec();
+            .withCmd(cmd)
+            .withAttachStdout(true)
+            .withAttachStderr(true)
+            .exec();
 
         ResultCallback<Frame> callback = new ResultCallback<Frame>() {
             @Override
@@ -134,15 +140,15 @@ public class NacosFaultSimulator {
 
         // Remove the latency qdisc
         String[] cmd = {
-                "sh", "-c",
-                "tc qdisc del dev eth0 root"
+            "sh", "-c",
+            "tc qdisc del dev eth0 root"
         };
 
         ExecCreateCmdResponse exec = dockerClient.execCreateCmd(containerId)
-                .withCmd(cmd)
-                .withAttachStdout(true)
-                .withAttachStderr(true)
-                .exec();
+            .withCmd(cmd)
+            .withAttachStdout(true)
+            .withAttachStderr(true)
+            .exec();
         ResultCallback<Frame> callback = new ResultCallback<Frame>() {
             @Override
             public void onStart(Closeable closeable) {
@@ -175,7 +181,7 @@ public class NacosFaultSimulator {
     /**
      * Simulate high CPU usage for a container.
      *
-     * @param container The Nacos container to stress
+     * @param container       The Nacos container to stress
      * @param durationSeconds The duration in seconds
      */
     public void simulateHighCpu(NacosContainer container, int durationSeconds) {
@@ -183,15 +189,15 @@ public class NacosFaultSimulator {
 
         // Use stress tool to generate CPU load
         String[] cmd = {
-                "sh", "-c",
-                "stress --cpu 4 --timeout " + durationSeconds + "s"
+            "sh", "-c",
+            "stress --cpu 4 --timeout " + durationSeconds + "s"
         };
 
         ExecCreateCmdResponse exec = dockerClient.execCreateCmd(containerId)
-                .withCmd(cmd)
-                .withAttachStdout(true)
-                .withAttachStderr(true)
-                .exec();
+            .withCmd(cmd)
+            .withAttachStdout(true)
+            .withAttachStderr(true)
+            .exec();
         ResultCallback<Frame> callback = new ResultCallback<Frame>() {
             @Override
             public void onStart(Closeable closeable) {

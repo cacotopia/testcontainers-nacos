@@ -16,8 +16,14 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class NacosTestDataGenerator {
 
+    /**
+     * Faker instance for generating random data.
+     */
     private final Faker faker;
 
+    /**
+     * Constructs a new NacosTestDataGenerator.
+     */
     public NacosTestDataGenerator() {
         this.faker = new Faker();
     }

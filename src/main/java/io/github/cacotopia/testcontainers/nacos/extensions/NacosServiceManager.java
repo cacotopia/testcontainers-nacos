@@ -19,9 +19,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class NacosServiceManager {
 
+    /**
+     * The Nacos container.
+     */
     private final NacosContainer container;
+
+    /**
+     * The NamingService instance.
+     */
     private final NamingService namingService;
 
+    /**
+     * Constructs a new NacosServiceManager instance.
+     *
+     * @param container The Nacos container
+     * @throws NacosException If an error occurs
+     */
     public NacosServiceManager(NacosContainer container) throws NacosException {
         this.container = container;
         this.namingService = container.getNamingService();
@@ -49,9 +62,9 @@ public class NacosServiceManager {
     public void deregisterInstances(List<NacosServiceInstance> instances) throws NacosException {
         for (NacosServiceInstance instance : instances) {
             namingService.deregisterInstance(
-                    instance.getServiceName(),
-                    instance.getIp(),
-                    instance.getPort()
+                instance.getServiceName(),
+                instance.getIp(),
+                instance.getPort()
             );
         }
     }
@@ -60,9 +73,9 @@ public class NacosServiceManager {
      * Update the health status of a service instance.
      *
      * @param serviceName The service name
-     * @param ip The instance IP
-     * @param port The instance port
-     * @param healthy Whether the instance is healthy
+     * @param ip          The instance IP
+     * @param port        The instance port
+     * @param healthy     Whether the instance is healthy
      * @throws NacosException If an error occurs
      */
     public void updateInstanceHealth(String serviceName, String ip, int port, boolean healthy) throws NacosException {
@@ -81,9 +94,9 @@ public class NacosServiceManager {
      * Update the weight of a service instance.
      *
      * @param serviceName The service name
-     * @param ip The instance IP
-     * @param port The instance port
-     * @param weight The new weight
+     * @param ip          The instance IP
+     * @param port        The instance port
+     * @param weight      The new weight
      * @throws NacosException If an error occurs
      */
     public void updateInstanceWeight(String serviceName, String ip, int port, double weight) throws NacosException {
@@ -102,9 +115,9 @@ public class NacosServiceManager {
      * Update the metadata of a service instance.
      *
      * @param serviceName The service name
-     * @param ip The instance IP
-     * @param port The instance port
-     * @param metadata The new metadata
+     * @param ip          The instance IP
+     * @param port        The instance port
+     * @param metadata    The new metadata
      * @throws NacosException If an error occurs
      */
     public void updateInstanceMetadata(String serviceName, String ip, int port, Map<String, String> metadata) throws NacosException {
@@ -122,10 +135,10 @@ public class NacosServiceManager {
     /**
      * Wait for a service to be registered.
      *
-     * @param serviceName The service name
+     * @param serviceName    The service name
      * @param timeoutSeconds The timeout in seconds
      * @return The service info
-     * @throws NacosException If an error occurs
+     * @throws NacosException       If an error occurs
      * @throws InterruptedException If interrupted
      */
     public ServiceInfo waitForServiceRegistration(String serviceName, int timeoutSeconds) throws NacosException, InterruptedException {

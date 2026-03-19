@@ -84,11 +84,12 @@ public class NacosDatabaseConfig {
     /**
      * Creates an external MySQL configuration.
      *
-     * @param host     The MySQL host
-     * @param port     The MySQL port
-     * @param database The database name
-     * @param username The MySQL username
-     * @param password The MySQL password
+     * @param host      The MySQL host
+     * @param port      The MySQL port
+     * @param database  The database name
+     * @param username  The MySQL username
+     * @param password  The MySQL password
+     * @param urlParams The JDBC URL params
      * @return A new NacosDatabaseConfig instance with external MySQL
      */
     public static NacosDatabaseConfig externalMySQL(String host, int port, String database, String username, String password, String urlParams) {
@@ -124,6 +125,7 @@ public class NacosDatabaseConfig {
      * @param database   The database name
      * @param username   The MySQL username
      * @param password   The MySQL password
+     * @param urlParams  The JDBC URL params
      * @return A new NacosDatabaseConfig instance with MySQL container
      */
     public static NacosDatabaseConfig mysqlContainer(String mysqlImage, String database, String username, String password, String urlParams) {
@@ -138,11 +140,12 @@ public class NacosDatabaseConfig {
     /**
      * Creates an external PostgreSQL configuration.
      *
-     * @param host     The PostgreSQL host
-     * @param port     The PostgreSQL port
-     * @param database The database name
-     * @param username The PostgreSQL username
-     * @param password The PostgreSQL password
+     * @param host      The PostgreSQL host
+     * @param port      The PostgreSQL port
+     * @param database  The database name
+     * @param username  The PostgreSQL username
+     * @param password  The PostgreSQL password
+     * @param urlParams The JDBC URL params
      * @return A new NacosDatabaseConfig instance with external PostgreSQL
      */
     public static NacosDatabaseConfig externalPostgreSQL(String host, int port, String database, String username, String password, String urlParams) {
@@ -178,6 +181,7 @@ public class NacosDatabaseConfig {
      * @param database        The database name
      * @param username        The MySQL username
      * @param password        The MySQL password
+     * @param urlParams       The JDBC URL params
      * @return A new NacosDatabaseConfig instance with MySQL container
      */
     public static NacosDatabaseConfig postgresqlContainer(String postgresqlImage, String database, String username, String password, String urlParams) {

@@ -18,9 +18,22 @@ import java.util.stream.Collectors;
  */
 public class NacosConfigManager {
 
+    /**
+     * The Nacos container instance.
+     */
     private final NacosContainer container;
+
+    /**
+     * The Nacos configuration service.
+     */
     private final ConfigService configService;
 
+    /**
+     * Constructs a new NacosConfigManager instance.
+     *
+     * @param container The Nacos container instance
+     * @throws NacosException If an error occurs
+     */
     public NacosConfigManager(NacosContainer container) throws NacosException {
         this.container = container;
         this.configService = container.getConfigService();
@@ -35,9 +48,9 @@ public class NacosConfigManager {
     public void publishConfigs(List<NacosConfig> configs) throws NacosException {
         for (NacosConfig config : configs) {
             configService.publishConfig(
-                    config.getDataId(),
-                    config.getGroup(),
-                    config.getContent()
+                config.getDataId(),
+                config.getGroup(),
+                config.getContent()
             );
         }
     }
@@ -46,32 +59,32 @@ public class NacosConfigManager {
      * Get multiple configurations at once.
      *
      * @param dataIds List of data IDs
-     * @param group The group name
+     * @param group   The group name
      * @return Map of data ID to configuration content
      * @throws NacosException If an error occurs
      */
     public Map<String, String> getConfigs(List<String> dataIds, String group) throws NacosException {
         return dataIds.stream()
-                .collect(Collectors.toMap(
-                        dataId -> dataId,
-                        dataId -> {
-                            try {
-                                return configService.getConfig(dataId, group, 5000);
-                            } catch (NacosException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                ));
+            .collect(Collectors.toMap(
+                dataId -> dataId,
+                dataId -> {
+                    try {
+                        return configService.getConfig(dataId, group, 5000);
+                    } catch (NacosException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            ));
     }
 
     /**
      * Add a configuration change listener and wait for a change.
      *
-     * @param dataId The data ID to listen to
-     * @param group The group name
+     * @param dataId         The data ID to listen to
+     * @param group          The group name
      * @param timeoutSeconds The timeout in seconds
      * @return The new configuration content
-     * @throws NacosException If an error occurs
+     * @throws NacosException       If an error occurs
      * @throws InterruptedException If interrupted
      */
     public String waitForConfigChange(String dataId, String group, int timeoutSeconds) throws NacosException, InterruptedException {
@@ -102,8 +115,8 @@ public class NacosConfigManager {
     /**
      * Rollback a configuration to a previous version.
      *
-     * @param dataId The data ID
-     * @param group The group name
+     * @param dataId  The data ID
+     * @param group   The group name
      * @param version The version to rollback to
      * @throws NacosException If an error occurs
      */
@@ -117,7 +130,7 @@ public class NacosConfigManager {
      * Get configuration history for a data ID.
      *
      * @param dataId The data ID
-     * @param group The group name
+     * @param group  The group name
      * @return List of configuration versions
      * @throws NacosException If an error occurs
      */
@@ -136,7 +149,7 @@ public class NacosConfigManager {
     public boolean validateConfig(NacosConfig config) {
         // Basic validation - check if dataId and content are not empty
         return config.getDataId() != null && !config.getDataId().isEmpty()
-                && config.getContent() != null && !config.getContent().isEmpty();
+            && config.getContent() != null && !config.getContent().isEmpty();
     }
 
     /**
@@ -149,7 +162,7 @@ public class NacosConfigManager {
     }
 }
 
-//// Needed for the Listener interface
+/// / Needed for the Listener interface
 //interface Executor {
 //    void execute(Runnable command);
 //}

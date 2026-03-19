@@ -671,11 +671,12 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     /**
      * Configures Nacos to use an external MySQL database.
      *
-     * @param host     The MySQL host
-     * @param port     The MySQL port
-     * @param database The database name
-     * @param username The MySQL username
-     * @param password The MySQL password
+     * @param host      The MySQL host
+     * @param port      The MySQL port
+     * @param database  The database name
+     * @param username  The MySQL username
+     * @param password  The MySQL password
+     * @param urlParams The URL parameters
      * @return This container instance
      */
     public SELF withExternalMySQL(String host, int port, String database, String username, String password, String urlParams) {
@@ -699,11 +700,12 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     /**
      * Configures Nacos to use an external PostgreSQL database.
      *
-     * @param host     The PostgreSQL host
-     * @param port     The PostgreSQL port
-     * @param database The database name
-     * @param username The PostgreSQL username
-     * @param password The PostgreSQL password
+     * @param host      The PostgreSQL host
+     * @param port      The PostgreSQL port
+     * @param database  The database name
+     * @param username  The PostgreSQL username
+     * @param password  The PostgreSQL password
+     * @param urlParams The URL parameters
      * @return This container instance
      */
     public SELF withExternalPostgreSQL(String host, int port, String database, String username, String password, String urlParams) {
@@ -907,7 +909,6 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         return self();
     }
 
-
     /**
      * Gets the Nacos version.
      *
@@ -1052,18 +1053,38 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         return authEnabled;
     }
 
+    /**
+     * Checks if authentication caching is enabled.
+     *
+     * @return true if authentication caching is enabled, false otherwise
+     */
     public boolean isAuthCacheEnabled() {
         return authCacheEnabled;
     }
 
+    /**
+     * Gets the authentication token.
+     *
+     * @return The authentication token
+     */
     public String getAuthToken() {
         return authToken;
     }
 
+    /**
+     * Gets the authentication identity key.
+     *
+     * @return The authentication identity key
+     */
     public String getAuthIdentityKey() {
         return authIdentityKey;
     }
 
+    /**
+     * Gets the authentication identity value.
+     *
+     * @return The authentication identity key
+     */
     public String getAuthIdentityValue() {
         return authIdentityValue;
     }
