@@ -14,8 +14,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 
@@ -27,6 +25,7 @@ import java.util.*;
  * @param <SELF> The type of the subclass extending this container
  */
 public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosContainer<SELF>> extends GenericContainer<SELF> {
+
     /**
      * Default Nacos Docker image name
      */
@@ -36,6 +35,11 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      * Default Nacos version
      */
     private static final String NACOS_VERSION = "v2.5.2";
+
+    /**
+     * Nacos Console port
+     */
+    private static final int NACOS_PORT_CONSOLE = 8080;
 
     /**
      * Nacos HTTP port
@@ -123,9 +127,42 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     private List<NacosServiceInstance> initialServices = new ArrayList<>();
 
     /**
+     * Whether Debug Mode is enabled
+     */
+    private boolean debugEnabled = false;
+
+    /**
      * Whether authentication is enabled
      */
     private boolean authEnabled = true;
+
+    /**
+     * Whether authentication Cache is enabled
+     */
+    private boolean authCacheEnabled = true;
+
+    /**
+     * Authentication token when  authentication is enabled
+     * Must be set since Nacos  2.2.1 when  authentication is enabled
+     */
+    private String authToken = "";
+
+    /**
+     * Authentication Identity Key when  authentication is enabled
+     * Must be set since Nacos  2.2.1 when  authentication is enabled
+     */
+    private String authIdentityKey = "serverIdentity";
+
+    /**
+     * Authentication Identity Value when  authentication is enabled
+     * Must be set since Nacos  2.2.1 when  authentication is enabled
+     */
+    private String authIdentityValue = "security";
+
+    /**
+     * Token expiration time in seconds (default: 5 hours)
+     */
+    private int tokenExpiration = 18000;
 
     /**
      * Whether console is enabled
@@ -136,11 +173,6 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      * Whether metrics are enabled
      */
     private boolean metricsEnabled = false;
-
-    /**
-     * Token expiration time in seconds (default: 5 hours)
-     */
-    private int tokenExpiration = 18000; // 默认 5 小时
 
     /**
      * Nacos client factory
@@ -173,7 +205,7 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         super(DockerImageName.parse(dockerImageName));
         this.dockerImageName = dockerImageName;
         this.nacosVersion = NacosVersion.fromImageName(dockerImageName);
-        withExposedPorts(NACOS_PORT_HTTP, NACOS_PORT_GRPC, NACOS_PORT_GRPC_MGMT);
+        withExposedPorts(NACOS_PORT_CONSOLE, NACOS_PORT_HTTP, NACOS_PORT_GRPC, NACOS_PORT_GRPC_MGMT);
         withLogConsumer(new Slf4jLogConsumer(logger()));
         logger().info("Using Nacos version: {}", nacosVersion.getDisplayName());
     }
@@ -186,17 +218,17 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     @Override
     public void start() {
         if (databaseConfig != null && !databaseConfig.isEmbedded()) {
-            try {
-                // Initialize database schema
-                NacosDatabaseInitializer.initialize(databaseConfig);
-            } catch (SQLException | IOException e) {
-                throw new IllegalStateException("Failed to initialize database", e);
-            }
             if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
                 databaseConfig.getMysqlContainer().start();
             }
             if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
                 databaseConfig.getPostgresqlContainer().start();
+            }
+            try {
+                // Initialize database schema
+                NacosDatabaseInitializer.initialize(databaseConfig);
+            } catch (SQLException | IOException e) {
+                throw new IllegalStateException("Failed to initialize database", e);
             }
         }
         super.start();
@@ -213,7 +245,7 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         NacosEnvironmentConfigurer configurer = new NacosEnvironmentConfigurer(nacosVersion, this);
 
         // 配置基础设置
-        configurer.configureBasicSettings(username, password, authEnabled, tokenExpiration, consoleEnabled, namespace);
+        configurer.configureBasicSettings(debugEnabled, authEnabled, authToken, authIdentityKey, authIdentityValue, tokenExpiration, consoleEnabled, namespace);
 
         // 配置数据库
         configurer.configureDatabase(databaseConfig);
@@ -311,42 +343,6 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * Gets the Nacos version.
-     *
-     * @return The Nacos version
-     */
-    public NacosVersion getNacosVersion() {
-        return nacosVersion;
-    }
-
-    /**
-     * Checks if the Nacos version is 3.x.
-     *
-     * @return true if Nacos version is 3.x, false otherwise
-     */
-    public boolean isV3() {
-        return nacosVersion != null && nacosVersion.isV3();
-    }
-
-    /**
-     * Checks if the Nacos version is 2.x.
-     *
-     * @return true if Nacos version is 2.x, false otherwise
-     */
-    public boolean isV2() {
-        return nacosVersion != null && nacosVersion.isV2();
-    }
-
-    /**
-     * Gets the Docker image name.
-     *
-     * @return The Docker image name
-     */
-    public String getDockerImageName() {
-        return dockerImageName;
-    }
-
-    /**
      * Sets the username for Nacos authentication.
      *
      * @param username The username to use
@@ -369,15 +365,12 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
-     * @param databaseType The databaseType to use
+     * Configures the embedded derby database for Nacos.
+     *
      * @return This container instance
-     * @deprecated Use {@link #withDatabaseConfig(NacosDatabaseConfig)} instead
      */
-    @Deprecated
-    public SELF withDatabaseType(String databaseType) {
-        if ("embedded".equalsIgnoreCase(databaseType)) {
-            this.databaseConfig = NacosDatabaseConfig.embedded();
-        }
+    public SELF withEmbeddedDatabaseType() {
+        this.databaseConfig = NacosDatabaseConfig.embedded();
         return self();
     }
 
@@ -402,8 +395,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      * @param password The MySQL password
      * @return This container instance
      */
-    public SELF withExternalMySQL(String host, int port, String database, String username, String password) {
-        this.databaseConfig = NacosDatabaseConfig.externalMySQL(host, port, database, username, password);
+    public SELF withExternalMySQL(String host, int port, String database, String username, String password, String urlParams) {
+        this.databaseConfig = NacosDatabaseConfig.externalMySQL(host, port, database, username, password, urlParams);
         return self();
     }
 
@@ -428,8 +421,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      * @param password The PostgreSQL password
      * @return This container instance
      */
-    public SELF withExternalPostgreSQL(String host, int port, String database, String username, String password) {
-        this.databaseConfig = NacosDatabaseConfig.externalPostgreSQL(host, port, database, username, password);
+    public SELF withExternalPostgreSQL(String host, int port, String database, String username, String password, String urlParams) {
+        this.databaseConfig = NacosDatabaseConfig.externalPostgreSQL(host, port, database, username, password, urlParams);
         return self();
     }
 
@@ -628,6 +621,17 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
+     * Enables or disables Nacos debug mode.
+     *
+     * @param enabled true to enable debug mode, false otherwise
+     * @return This container instance
+     */
+    public SELF withDebugEnabled(boolean enabled) {
+        this.debugEnabled = enabled;
+        return self();
+    }
+
+    /**
      * Enables or disables authentication.
      *
      * @param enabled true to enable authentication, false otherwise
@@ -635,6 +639,61 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public SELF withAuthEnabled(boolean enabled) {
         this.authEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Enables or disables authentication cache.
+     *
+     * @param enabled true to enable authentication cache, false otherwise
+     * @return This container instance
+     */
+    public SELF withAuthCacheEnabled(boolean enabled) {
+        this.authCacheEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Sets the authentication token when authentication is enabled.
+     *
+     * @param authToken The authentication token
+     * @return This container instance
+     */
+    public SELF withAuthToken(String authToken) {
+        this.authToken = authToken;
+        return self();
+    }
+
+    /**
+     * Sets the token expiration time in seconds.
+     *
+     * @param seconds The token expiration time in seconds
+     * @return This container instance
+     */
+    public SELF withTokenExpiration(int seconds) {
+        this.tokenExpiration = seconds;
+        return self();
+    }
+
+    /**
+     * Sets the authentication identity key when authentication is enabled.
+     *
+     * @param authIdentityKey The authentication identity key
+     * @return This container instance
+     */
+    public SELF withAuthIdentityKey(String authIdentityKey) {
+        this.authIdentityKey = authIdentityKey;
+        return self();
+    }
+
+    /**
+     * Sets the authentication identity value when authentication is enabled.
+     *
+     * @param authIdentityValue The authentication identity value
+     * @return This container instance
+     */
+    public SELF withAuthIdentityValue(String authIdentityValue) {
+        this.authIdentityValue = authIdentityValue;
         return self();
     }
 
@@ -659,15 +718,41 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         return self();
     }
 
+
     /**
-     * Sets the token expiration time in seconds.
+     * Gets the Nacos version.
      *
-     * @param seconds The token expiration time in seconds
-     * @return This container instance
+     * @return The Nacos version
      */
-    public SELF withTokenExpiration(int seconds) {
-        this.tokenExpiration = seconds;
-        return self();
+    public NacosVersion getNacosVersion() {
+        return nacosVersion;
+    }
+
+    /**
+     * Checks if the Nacos version is 3.x.
+     *
+     * @return true if Nacos version is 3.x, false otherwise
+     */
+    public boolean isV3() {
+        return nacosVersion != null && nacosVersion.isV3();
+    }
+
+    /**
+     * Checks if the Nacos version is 2.x.
+     *
+     * @return true if Nacos version is 2.x, false otherwise
+     */
+    public boolean isV2() {
+        return nacosVersion != null && nacosVersion.isV2();
+    }
+
+    /**
+     * Gets the Docker image name.
+     *
+     * @return The Docker image name
+     */
+    public String getDockerImageName() {
+        return dockerImageName;
     }
 
     /**
@@ -776,6 +861,22 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public boolean isAuthEnabled() {
         return authEnabled;
+    }
+
+    public boolean isAuthCacheEnabled() {
+        return authCacheEnabled;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public String getAuthIdentityKey() {
+        return authIdentityKey;
+    }
+
+    public String getAuthIdentityValue() {
+        return authIdentityValue;
     }
 
     /**

@@ -3,6 +3,7 @@ package io.github.cacotopia.testcontainers.nacos;
 import org.testcontainers.containers.Network;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +59,18 @@ public class NacosCluster implements Startable {
      */
     @Override
     public void start() {
-        // 如果使用 MySQL 容器，先启动 MySQL
+
         if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER) {
+            // 如果使用 MySQL 容器，先启动 MySQL
             MySQLContainer mysql = databaseConfig.getMysqlContainer();
             if (mysql != null && !mysql.isRunning()) {
                 mysql.start();
+            }
+        } else if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER) {
+            // 如果使用 PostgreSQL 容器，先启动 PostgreSQL
+            PostgreSQLContainer postgresql = databaseConfig.getPostgresqlContainer();
+            if (postgresql != null && !postgresql.isRunning()) {
+                postgresql.start();
             }
         }
 
@@ -119,9 +127,9 @@ public class NacosCluster implements Startable {
     /**
      * Creates a single Nacos node for the cluster.
      *
-     * @param nodeName The name of the node
+     * @param nodeName  The name of the node
      * @param nodeIndex The index of the node
-     * @param allNodes List of all nodes in the cluster
+     * @param allNodes  List of all nodes in the cluster
      * @return A NacosContainer instance
      */
     private NacosContainer createNode(String nodeName, int nodeIndex, List<NacosClusterNode> allNodes) {

@@ -5,7 +5,7 @@
 
     <groupId>io.github.cacotopia</groupId>
     <artifactId>testcontainers-nacos</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <name>Testcontainers Nacos</name>
     <packaging>jar</packaging>
@@ -68,17 +68,27 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <testcontainers.version>2.0.2</testcontainers.version>
         <jackson.version>2.17.2</jackson.version>
         <jackson-annotations.version>2.17</jackson-annotations.version>
         <junit-jupiter.version>5.11.0</junit-jupiter.version>
         <logback.version>1.5.32</logback.version>
         <nacos-client.version>2.3.0</nacos-client.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest-assured.version>5.5.0</rest-assured.version>
         <shrinkwrap.version>2.0.0-beta-2</shrinkwrap.version>
         <shrinkwrap-resolver.version>3.3.5</shrinkwrap-resolver.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <testcontainers.version>2.0.2</testcontainers.version>
+        <datafaker.version>2.5.4</datafaker.version>
+        <awaitility.version>4.3.0</awaitility.version>
+        <assertj.version>3.21.0</assertj.version>
+        <docker-java-api.version>3.7.0</docker-java-api.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+        <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
     </properties>
 
     <dependencies>
@@ -121,7 +131,7 @@
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-api</artifactId>
-            <version>3.7.0</version>
+            <version>${docker-java-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -176,7 +186,7 @@
         <dependency>
             <groupId>net.datafaker</groupId>
             <artifactId>datafaker</artifactId>
-            <version>2.5.4</version>
+            <version>${datafaker.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -188,20 +198,14 @@
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.3.0</version>
+            <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.21.0</version>
+            <version>${assertj.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.datafaker</groupId>
-            <artifactId>datafaker</artifactId>
-            <version>2.5.4</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -210,7 +214,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default-testCompile</id>
@@ -223,18 +227,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
+                <version>${maven-surefire-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.10.0</version>
+                <version>${central-publishing-maven-plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
@@ -246,7 +249,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.4.0</version>
+                        <version>${maven-source-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -259,7 +262,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.12.0</version>
+                        <version>${maven-javadoc-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -272,7 +275,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

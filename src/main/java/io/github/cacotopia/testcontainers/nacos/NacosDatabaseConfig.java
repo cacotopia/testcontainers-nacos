@@ -68,18 +68,24 @@ public class NacosDatabaseConfig {
     private String password = "nacos";
 
     /**
+     * JDBC URL Params
+     * For example: Mysql-> "characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai"
+     */
+    private String urlParams;
+
+    /**
      * JDBC URL
      */
     private String url;
 
-    // Testcontainers MySQL container reference
     /**
+     * Testcontainers MySQL container reference
      * MySQL container instance
      */
     private MySQLContainer mysqlContainer;
 
-    // Testcontainers PostgreSQL container reference
     /**
+     * Testcontainers PostgreSQL container reference
      * PostgreSQL container instance
      */
     private PostgreSQLContainer postgresqlContainer;
@@ -111,7 +117,7 @@ public class NacosDatabaseConfig {
      * @param password The MySQL password
      * @return A new NacosDatabaseConfig instance with external MySQL
      */
-    public static NacosDatabaseConfig externalMySQL(String host, int port, String database, String username, String password) {
+    public static NacosDatabaseConfig externalMySQL(String host, int port, String database, String username, String password, String urlParams) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
         config.type = DatabaseType.EXTERNAL_MYSQL;
         config.host = host;
@@ -119,6 +125,7 @@ public class NacosDatabaseConfig {
         config.database = database;
         config.username = username;
         config.password = password;
+        config.urlParams = urlParams;
         return config;
     }
 
@@ -149,11 +156,12 @@ public class NacosDatabaseConfig {
      * @param password   The MySQL password
      * @return A new NacosDatabaseConfig instance with MySQL container
      */
-    public static NacosDatabaseConfig mysqlContainer(String mysqlImage, String database, String username, String password) {
+    public static NacosDatabaseConfig mysqlContainer(String mysqlImage, String database, String username, String password, String urlParams) {
         MySQLContainer mysql = new MySQLContainer(mysqlImage)
             .withDatabaseName(database)
             .withUsername(username)
             .withPassword(password);
+        // TODO: Set URL params
         return mysqlContainer(mysql);
     }
 
@@ -167,7 +175,7 @@ public class NacosDatabaseConfig {
      * @param password The PostgreSQL password
      * @return A new NacosDatabaseConfig instance with external PostgreSQL
      */
-    public static NacosDatabaseConfig externalPostgreSQL(String host, int port, String database, String username, String password) {
+    public static NacosDatabaseConfig externalPostgreSQL(String host, int port, String database, String username, String password, String urlParams) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
         config.type = DatabaseType.EXTERNAL_POSTGRESQL;
         config.host = host;
@@ -175,6 +183,7 @@ public class NacosDatabaseConfig {
         config.database = database;
         config.username = username;
         config.password = password;
+        config.urlParams = urlParams;
         return config;
     }
 
@@ -205,11 +214,12 @@ public class NacosDatabaseConfig {
      * @param password        The MySQL password
      * @return A new NacosDatabaseConfig instance with MySQL container
      */
-    public static NacosDatabaseConfig postgresqlContainer(String postgresqlImage, String database, String username, String password) {
+    public static NacosDatabaseConfig postgresqlContainer(String postgresqlImage, String database, String username, String password, String urlParams) {
         PostgreSQLContainer postgresql = new PostgreSQLContainer(postgresqlImage)
             .withDatabaseName(database)
             .withUsername(username)
             .withPassword(password);
+        // TODO: Set URL params
         return postgresqlContainer(postgresql);
     }
 
@@ -268,6 +278,15 @@ public class NacosDatabaseConfig {
     }
 
     /**
+     * Gets the JDBC URL params.
+     *
+     * @return The JDBC URL params
+     */
+    public String getUrlParams() {
+        return urlParams;
+    }
+
+    /**
      * Gets the JDBC URL.
      *
      * @return The JDBC URL, or null for embedded database
@@ -283,7 +302,7 @@ public class NacosDatabaseConfig {
             return String.format("jdbc:postgresql://%s:%d/%s?currentSchema=nacos",
                 host, port, database);
         }
-        return String.format("jdbc:mysql://%s:%d/%s?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai",
+        return String.format("jdbc:mysql://%s:%d/%s?",
             host, port, database);
     }
 
