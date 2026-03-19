@@ -22,7 +22,7 @@ public class NacosDatabaseInitTest {
     @Test
     public void testMySQLDatabaseInitialization() throws SQLException, IOException {
         // Create MySQL container
-        MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0")
+        MySQLContainer mysqlContainer = new MySQLContainer("mysql:8.0")
             .withDatabaseName("nacos")
             .withUsername("nacos")
             .withPassword("nacos");
@@ -48,7 +48,7 @@ public class NacosDatabaseInitTest {
     @Test
     public void testPostgreSQLDatabaseInitialization() throws SQLException, IOException {
         // Create PostgreSQL container
-        PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>("postgres:14")
+        PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer("postgres:14")
             .withDatabaseName("nacos")
             .withUsername("nacos")
             .withPassword("nacos");
