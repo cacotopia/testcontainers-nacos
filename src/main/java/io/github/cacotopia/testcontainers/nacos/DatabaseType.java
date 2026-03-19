@@ -15,7 +15,7 @@ public enum DatabaseType {
     /**
      * External MySQL instance
      */
-    EXTERNAL_MYSQL,
+    MYSQL_EXTERNAL,
     /**
      * Testcontainers PostgreSQL container
      */
@@ -23,5 +23,5 @@ public enum DatabaseType {
     /**
      * External PostgreSQL instance
      */
-    EXTERNAL_POSTGRESQL
+    POSTGRESQL_EXTERNAL
 }

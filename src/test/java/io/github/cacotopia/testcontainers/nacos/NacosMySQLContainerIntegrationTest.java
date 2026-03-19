@@ -2,37 +2,38 @@ package io.github.cacotopia.testcontainers.nacos;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Nacos PostgreSQL 数据库集成测试
+ * Nacos MySQL 数据库集成测试
  */
 @Testcontainers
-class NacosPostgreSQLIntegrationTest {
+class NacosMySQLContainerIntegrationTest {
 
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:14.22")
+    static MySQLContainer mysql = new MySQLContainer("mysql:8.0.45")
         .withDatabaseName("nacos")
         .withUsername("nacos")
         .withPassword("nacos");
 
     @Container
     static NacosContainer nacos = new NacosContainer()
-        .withPostgreSQLContainer(postgres);
+        .withDebugEnabled(true)
+        .withMySQLContainer(mysql);
 
     @Test
-    @DisplayName("应该使用 PostgreSQL 数据库配置")
-    void shouldUsePostgreSQLDatabase() {
+    @DisplayName("应该使用 MySQL 数据库配置")
+    void shouldUseMySQLDatabase() {
         NacosDatabaseConfig dbConfig = nacos.getDatabaseConfig();
 
         assertThat(dbConfig).isNotNull();
-        assertThat(dbConfig.isPostgreSQL()).isTrue();
+        assertThat(dbConfig.isMySQL()).isTrue();
         assertThat(dbConfig.isEmbedded()).isFalse();
-        assertThat(dbConfig.isMySQL()).isFalse();
+        assertThat(dbConfig.isPostgreSQL()).isFalse();
     }
 
     @Test
@@ -41,41 +42,32 @@ class NacosPostgreSQLIntegrationTest {
         NacosDatabaseConfig dbConfig = nacos.getDatabaseConfig();
 
         assertThat(dbConfig.getHost()).isNotNull();
-        assertThat(dbConfig.getPort()).isEqualTo(postgres.getMappedPort(5432));
+        assertThat(dbConfig.getPort()).isGreaterThan(0);
         assertThat(dbConfig.getDatabase()).isEqualTo("nacos");
         assertThat(dbConfig.getUsername()).isEqualTo("nacos");
         assertThat(dbConfig.getPassword()).isEqualTo("nacos");
     }
 
     @Test
-    @DisplayName("应该生成正确的 PostgreSQL JDBC URL")
+    @DisplayName("应该生成正确的 JDBC URL")
     void shouldGenerateCorrectJdbcUrl() {
         NacosDatabaseConfig dbConfig = nacos.getDatabaseConfig();
         String url = dbConfig.getUrl();
 
         assertThat(url)
             .isNotNull()
-            .startsWith("jdbc:postgresql://")
+            .startsWith("jdbc:mysql://")
             .contains("nacos")
-            .contains("currentSchema=nacos");
+            .contains("useSSL=false");
     }
 
     @Test
     @DisplayName("容器应该成功启动并返回服务URL")
-    void shouldStartWithPostgreSQLAndReturnServiceUrl() {
+    void shouldStartWithMySQLAndReturnServiceUrl() {
         String serviceUrl = nacos.getServiceUrl();
 
         assertThat(serviceUrl)
             .isNotNull()
             .startsWith("http://");
-    }
-
-    @Test
-    @DisplayName("应该能获取 PostgreSQL 容器实例")
-    void shouldGetPostgreSQLContainer() {
-        NacosDatabaseConfig dbConfig = nacos.getDatabaseConfig();
-
-        assertThat(dbConfig.getPostgresqlContainer()).isNotNull();
-        assertThat(dbConfig.getPostgresqlContainer()).isEqualTo(postgres);
     }
 }

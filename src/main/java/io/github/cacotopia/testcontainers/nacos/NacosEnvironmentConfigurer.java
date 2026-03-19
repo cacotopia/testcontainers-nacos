@@ -35,25 +35,42 @@ public class NacosEnvironmentConfigurer {
     /**
      * Configures basic environment variables.
      *
+     * @param consoleUiEnabled Whether the console UI is enabled
+     * @param namespace        The Nacos namespace
+     * @param debug            Whether debug mode is enabled
+     */
+    public void configureBasicSettings(boolean debug,
+                                       boolean consoleUiEnabled, String namespace) {
+        // 认证配置（2.x 和 3.x 相同）
+        withEnv(NacosConstant.NACOS_DEBUG, String.valueOf(debug));
+
+        // 控制台配置
+        if (version.isV3()) {
+            // Nacos 3.x 使用新的控制台配置
+            withEnv(NacosConstant.NACOS_CONSOLE_UI_ENABLED, String.valueOf(consoleUiEnabled));
+        }
+        // 命名空间配置
+        if (namespace != null && !namespace.isEmpty()) {
+            withEnv("NACOS_NAMESPACE", namespace);
+        }
+    }
+
+    /**
+     * Configures authentication environment variables.
+     *
      * @param authEnabled        Whether authentication is enabled
      * @param tokenExpiration    Token expiration time in seconds
      * @param consoleAuthEnabled Whether the console authentication is enabled
      * @param adminAuthEnabled   Whether the admin authentication is enabled
-     * @param consoleUiEnabled   Whether the console UI is enabled
-     * @param namespace          The Nacos namespace
      * @param authToken          The authentication token (if auth is enabled)
      * @param authIdentityKey    The authentication identity key (if auth is enabled)
      * @param authIdentityValue  The authentication identity value (if auth is enabled)
-     * @param debug              Whether debug mode is enabled
      */
-    public void configureBasicSettings(boolean debug,
-                                       boolean authEnabled, String authToken,
-                                       boolean consoleAuthEnabled, boolean adminAuthEnabled,
-                                       String authIdentityKey, String authIdentityValue,
-                                       int tokenExpiration,
-                                       boolean consoleUiEnabled, String namespace) {
+    public void configureAuthSettings(boolean authEnabled, String authToken,
+                                      boolean consoleAuthEnabled, boolean adminAuthEnabled,
+                                      String authIdentityKey, String authIdentityValue,
+                                      int tokenExpiration) {
         // 认证配置（2.x 和 3.x 相同）
-        withEnv(NacosConstant.NACOS_DEBUG, String.valueOf(debug));
         withEnv(NacosConstant.NACOS_AUTH_ENABLE, String.valueOf(authEnabled));
         withEnv(NacosConstant.NACOS_AUTH_TOKEN, authToken);
         withEnv(NacosConstant.NACOS_AUTH_TOKEN_EXPIRE_SECONDS, String.valueOf(tokenExpiration));
@@ -68,11 +85,6 @@ public class NacosEnvironmentConfigurer {
             // Nacos 3.x 使用新的控制台配置
             withEnv(NacosConstant.NACOS_AUTH_CONSOLE_ENABLE, String.valueOf(consoleAuthEnabled));
             withEnv(NacosConstant.NACOS_AUTH_ADMIN_ENABLE, String.valueOf(adminAuthEnabled));
-            withEnv(NacosConstant.NACOS_CONSOLE_UI_ENABLED, String.valueOf(consoleUiEnabled));
-        }
-        // 命名空间配置
-        if (namespace != null && !namespace.isEmpty()) {
-            withEnv("NACOS_NAMESPACE", namespace);
         }
     }
 

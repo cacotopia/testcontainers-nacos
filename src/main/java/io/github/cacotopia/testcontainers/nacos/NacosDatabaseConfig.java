@@ -93,7 +93,7 @@ public class NacosDatabaseConfig {
      */
     public static NacosDatabaseConfig externalMySQL(String host, int port, String database, String username, String password, String urlParams) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
-        config.type = DatabaseType.EXTERNAL_MYSQL;
+        config.type = DatabaseType.MYSQL_EXTERNAL;
         config.host = host;
         config.port = port;
         config.database = database;
@@ -147,7 +147,7 @@ public class NacosDatabaseConfig {
      */
     public static NacosDatabaseConfig externalPostgreSQL(String host, int port, String database, String username, String password, String urlParams) {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
-        config.type = DatabaseType.EXTERNAL_POSTGRESQL;
+        config.type = DatabaseType.POSTGRESQL_EXTERNAL;
         config.host = host;
         config.port = port;
         config.database = database;
@@ -335,7 +335,7 @@ public class NacosDatabaseConfig {
      * @return true if using MySQL, false otherwise
      */
     public boolean isMySQL() {
-        return type == DatabaseType.MYSQL_CONTAINER || type == DatabaseType.EXTERNAL_MYSQL;
+        return type == DatabaseType.MYSQL_CONTAINER || type == DatabaseType.MYSQL_EXTERNAL;
     }
 
     /**
@@ -344,7 +344,7 @@ public class NacosDatabaseConfig {
      * @return true if using PostgreSQL, false otherwise
      */
     public boolean isPostgreSQL() {
-        return type == DatabaseType.POSTGRESQL_CONTAINER || type == DatabaseType.EXTERNAL_POSTGRESQL;
+        return type == DatabaseType.POSTGRESQL_CONTAINER || type == DatabaseType.POSTGRESQL_EXTERNAL;
     }
 
     /**

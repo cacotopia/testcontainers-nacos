@@ -255,8 +255,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         NacosEnvironmentConfigurer configurer = new NacosEnvironmentConfigurer(nacosVersion, this);
 
         // 配置基础设置
-        configurer.configureBasicSettings(debugEnabled, authEnabled, authToken, consoleAuthEnabled, adminAuthEnabled, authIdentityKey, authIdentityValue, tokenExpiration, consoleUiEnabled, namespace);
-
+        configurer.configureBasicSettings(debugEnabled, consoleUiEnabled, namespace);
+        configurer.configureAuthSettings(authEnabled, authToken, consoleAuthEnabled, adminAuthEnabled, authIdentityKey, authIdentityValue, tokenExpiration);
         // 配置数据库
         configurer.configureDatabase(databaseConfig);
 
