@@ -128,25 +128,31 @@ public class NacosEnvironmentConfigurer {
             // Nacos 3.x 使用新的数据库配置方式
             withEnv("spring.sql.init.platform", "mysql");
             withEnv("db.num", "1");
-            withEnv("db.url.0", databaseConfig.getUrl());
+//            withEnv("db.url.0", databaseConfig.getInternalUrl());
             withEnv("db.user.0", databaseConfig.getUsername());
             withEnv("db.password.0", databaseConfig.getPassword());
         } else {
             // Nacos 2.x 使用旧的数据库配置方式
-            // TODO 添加对 MySQL 的支持
-            withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "mysql");
+        }
+        // TODO 添加对 MySQL 的支持
+        withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "mysql");
+        if ((databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null)
+            || (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null)) {
+            withEnv(NacosConstant.MYSQL_SERVICE_HOST, databaseConfig.getInternalHost());
+            withEnv(NacosConstant.MYSQL_SERVICE_PORT, String.valueOf(databaseConfig.getInternalPort()));
+        } else {
             withEnv(NacosConstant.MYSQL_SERVICE_HOST, databaseConfig.getHost());
             withEnv(NacosConstant.MYSQL_SERVICE_PORT, String.valueOf(databaseConfig.getPort()));
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
-            withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
-            withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
-
-            String url = databaseConfig.getUrl();
-            if (url != null) {
-                withEnv("SPRING_DATASOURCE_URL", url);
-            }
         }
+        withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
+        withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
+        withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
+        withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
+
+//        String url = databaseConfig.getInternalUrl();
+//        if (url != null) {
+//            withEnv("SPRING_DATASOURCE_URL", url);
+//        }
     }
 
     /**
@@ -159,23 +165,28 @@ public class NacosEnvironmentConfigurer {
             // Nacos 3.x 使用新的数据库配置方式
             withEnv("spring.sql.init.platform", "postgresql");
             withEnv("db.num", "1");
-            withEnv("db.url.0", databaseConfig.getUrl());
+//            withEnv("db.url.0", databaseConfig.getInternalUrl());
             withEnv("db.user.0", databaseConfig.getUsername());
             withEnv("db.password.0", databaseConfig.getPassword());
         } else {
             // Nacos 2.x 使用旧的数据库配置方式
-            withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "postgresql");
+        }
+        withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "postgresql");
+        if ((databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null)) {
+            withEnv(NacosConstant.MYSQL_SERVICE_HOST, databaseConfig.getInternalHost());
+            withEnv(NacosConstant.MYSQL_SERVICE_PORT, String.valueOf(databaseConfig.getInternalPort()));
+        } else {
             withEnv(NacosConstant.MYSQL_SERVICE_HOST, databaseConfig.getHost());
             withEnv(NacosConstant.MYSQL_SERVICE_PORT, String.valueOf(databaseConfig.getPort()));
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
-            withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
-            withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
-            String url = databaseConfig.getUrl();
-            if (url != null) {
-                withEnv("SPRING_DATASOURCE_URL", url);
-            }
         }
+        withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
+        withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
+        withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
+        withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
+//        String url = databaseConfig.getInternalUrl();
+//        if (url != null) {
+//            withEnv("SPRING_DATASOURCE_URL", url);
+//        }
     }
 
     /**

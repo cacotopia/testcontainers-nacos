@@ -214,6 +214,23 @@ public class NacosDatabaseConfig {
     }
 
     /**
+     * Gets the database host for inter-container communication.
+     * Returns the network alias when using container databases,
+     * so other containers can connect via Docker network.
+     *
+     * @return The database host for internal Docker network access
+     */
+    public String getInternalHost() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return "mysql";
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return "postgresql";
+        }
+        return host;
+    }
+
+    /**
      * Gets the MySQL port.
      *
      * @return The MySQL port
@@ -224,6 +241,23 @@ public class NacosDatabaseConfig {
         }
         if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
             return postgresqlContainer.getMappedPort(5432);
+        }
+        return port;
+    }
+
+    /**
+     * Gets the database port for inter-container communication.
+     * Returns the internal port (3306 for MySQL, 5432 for PostgreSQL)
+     * for use within Docker network.
+     *
+     * @return The database port for internal Docker network access
+     */
+    public Integer getInternalPort() {
+        if (type == DatabaseType.MYSQL_CONTAINER) {
+            return 3306;
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER) {
+            return 5432;
         }
         return port;
     }
@@ -300,6 +334,25 @@ public class NacosDatabaseConfig {
         }
         return String.format("jdbc:mysql://%s:%d/%s?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai",
             getHost(), getPort(), getDatabase());
+    }
+
+    /**
+     * Gets the JDBC URL.
+     *
+     * @return The JDBC URL, or null for embedded database
+     */
+    public String getInternalUrl() {
+        if (url != null) {
+            return url;
+        }
+        if (type == DatabaseType.EMBEDDED) {
+            return null;
+        }
+        if (isPostgreSQL()) {
+            return String.format("jdbc:postgresql://%s:%d/%s?currentSchema=nacos", getInternalHost(), getInternalPort(), getDatabase());
+        }
+        return String.format("jdbc:mysql://%s:%d/%s?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai",
+            getInternalHost(), getInternalPort(), getDatabase());
     }
 
     /**

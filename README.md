@@ -157,7 +157,7 @@ Or use a Testcontainers MySQL container:
 
 ```java
 @Container
-MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+MySQLContainer mysql = new MySQLContainer<>("mysql:8.0.45")
     .withDatabaseName("nacos")
     .withUsername("nacos")
     .withPassword("nacos");
@@ -183,7 +183,7 @@ Or use a Testcontainers PostgreSQL container:
 
 ```java
 @Container
-PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+PostgreSQLContainer postgres = new PostgreSQLContainer<>("postgres:15")
     .withDatabaseName("nacos")
     .withUsername("nacos")
     .withPassword("nacos");

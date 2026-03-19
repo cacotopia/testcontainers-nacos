@@ -22,7 +22,7 @@ public class NacosDatabaseInitTest {
     @Test
     public void testMySQLDatabaseInitialization() throws SQLException, IOException {
         // Create MySQL container
-        MySQLContainer mysqlContainer = new MySQLContainer("mysql:8.0")
+        MySQLContainer mysqlContainer = new MySQLContainer("mysql:8.0.45")
             .withDatabaseName("nacos")
             .withUsername("nacos")
             .withPassword("nacos");

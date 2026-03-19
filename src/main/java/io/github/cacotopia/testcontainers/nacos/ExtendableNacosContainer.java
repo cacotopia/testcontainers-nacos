@@ -228,11 +228,29 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     @Override
     public void start() {
         if (databaseConfig != null && !databaseConfig.isEmbedded()) {
+            // Setup shared network for container databases
+            Network sharedNetwork = setupSharedNetwork();
+
+            // Start database containers
             if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
-                databaseConfig.getMysqlContainer().start();
+                MySQLContainer mysqlContainer = databaseConfig.getMysqlContainer();
+                // Apply shared network if DB container doesn't have one
+                if (sharedNetwork != null && mysqlContainer.getNetwork() == null) {
+                    mysqlContainer.withNetwork(sharedNetwork);
+                    mysqlContainer.withNetworkAliases("mysql");
+                    logger().info("Configured MySQL container with network alias 'mysql' on network: {}", sharedNetwork.getId());
+                }
+                mysqlContainer.start();
             }
             if (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
-                databaseConfig.getPostgresqlContainer().start();
+                PostgreSQLContainer postgresqlContainer = databaseConfig.getPostgresqlContainer();
+                // Apply shared network if DB container doesn't have one
+                if (sharedNetwork != null && postgresqlContainer.getNetwork() == null) {
+                    postgresqlContainer.withNetwork(sharedNetwork);
+                    postgresqlContainer.withNetworkAliases("postgresql");
+                    logger().info("Configured PostgreSQL container with network alias 'postgresql' on network: {}", sharedNetwork.getId());
+                }
+                postgresqlContainer.start();
             }
             try {
                 // Initialize database schema
@@ -245,11 +263,93 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
+     * Creates or returns a shared network for inter-container communication.
+     * Must be called before starting any containers.
+     */
+    private Network setupSharedNetwork() {
+
+        if (!isContainerDb()) {
+            return null;
+        }
+
+        // If Nacos already has a network, use it
+        Network network = this.getNetwork();
+        if (network != null) {
+            logger().info("Using existing Nacos network: {}", network.getId());
+            return network;
+        }
+
+        // Check if DB container already has a network
+        if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
+            Network dbNetwork = databaseConfig.getMysqlContainer().getNetwork();
+            if (dbNetwork != null) {
+                this.withNetwork(dbNetwork);
+                logger().info("Using MySQL container's network: {}", dbNetwork.getId());
+                return dbNetwork;
+            }
+        }
+        if (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
+            Network dbNetwork = databaseConfig.getPostgresqlContainer().getNetwork();
+            if (dbNetwork != null) {
+                this.withNetwork(dbNetwork);
+                logger().info("Using PostgreSQL container's network: {}", dbNetwork.getId());
+                return dbNetwork;
+            }
+        }
+
+        // Create a new shared network
+        Network newNetwork = Network.newNetwork();
+        this.withNetwork(newNetwork);
+        logger().info("Created new shared network: {}", newNetwork.getId());
+        return newNetwork;
+    }
+
+    /**
+     * Sets up shared network between Nacos and database container.
+     * This must be called at configuration time (before start()).
+     */
+    private void setupNetworkForDatabaseContainer(GenericContainer<?> dbContainer, String alias) {
+        if (dbContainer == null) {
+            return;
+        }
+
+        // If Nacos already has a network, use it for the DB container
+        Network nacosNetwork = this.getNetwork();
+        if (nacosNetwork != null) {
+            if (dbContainer.getNetwork() == null) {
+                dbContainer.withNetwork(nacosNetwork);
+                dbContainer.withNetworkAliases(alias);
+                logger().info("Configured {} container with Nacos network and alias '{}'", alias, alias);
+            }
+            return;
+        }
+
+        // If DB container already has a network, use it for Nacos
+        Network dbNetwork = dbContainer.getNetwork();
+        if (dbNetwork != null) {
+            this.withNetwork(dbNetwork);
+            dbContainer.withNetworkAliases(alias);
+            logger().info("Using existing {} container network for Nacos with alias '{}'", alias, alias);
+            return;
+        }
+
+        // Create a new shared network for both
+        Network newNetwork = Network.newNetwork();
+        this.withNetwork(newNetwork);
+        dbContainer.withNetwork(newNetwork);
+        dbContainer.withNetworkAliases(alias);
+        logger().info("Created shared network for Nacos and {} container with alias '{}'", alias, alias);
+    }
+
+    /**
      * Configures the Nacos container with the specified settings.
      */
     @Override
     protected void configure() {
         List<String> commandParts = new ArrayList<>();
+
+        // Setup shared network for container databases before any container starts
+        setupDatabaseContainerNetwork();
 
         // 使用版本适配器配置环境变量
         NacosEnvironmentConfigurer configurer = new NacosEnvironmentConfigurer(nacosVersion, this);
@@ -286,6 +386,49 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     }
 
     /**
+     * Sets up shared Docker network for inter-container communication.
+     * Must be called in configure() before containers start.
+     */
+    private void setupDatabaseContainerNetwork() {
+        if (databaseConfig == null || databaseConfig.isEmbedded()) {
+            return;
+        }
+        if (!isContainerDb()) {
+            return;
+        }
+
+        // Create a shared network if Nacos doesn't have one
+        Network sharedNetwork = this.getNetwork();
+        if (sharedNetwork == null) {
+            sharedNetwork = Network.newNetwork();
+            this.withNetwork(sharedNetwork);
+            logger().info("Created shared Docker network for Nacos and database containers");
+        }
+
+        // Configure MySQL container with the same network and alias
+        if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
+            MySQLContainer mysqlContainer = databaseConfig.getMysqlContainer();
+            // Only configure network if not already set
+            if (mysqlContainer.getNetwork() == null) {
+                mysqlContainer.withNetwork(sharedNetwork);
+                mysqlContainer.withNetworkAliases("mysql");
+                logger().info("Configured MySQL container with network alias 'mysql'");
+            }
+        }
+
+        // Configure PostgreSQL container with the same network and alias
+        if (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
+            PostgreSQLContainer postgresqlContainer = databaseConfig.getPostgresqlContainer();
+            // Only configure network if not already set
+            if (postgresqlContainer.getNetwork() == null) {
+                postgresqlContainer.withNetwork(sharedNetwork);
+                postgresqlContainer.withNetworkAliases("postgresql");
+                logger().info("Configured PostgreSQL container with network alias 'postgresql'");
+            }
+        }
+    }
+
+    /**
      * Called when the container is started.
      * Imports initial configurations and registers initial services.
      *
@@ -305,6 +448,16 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         } catch (Exception e) {
             logger().warn("Failed to initialize Nacos configs or services: {}", e.getMessage());
         }
+    }
+
+    /**
+     * Determines if the database is a container database.
+     *
+     * @return true if the database is a container database, false otherwise
+     */
+    private boolean isContainerDb() {
+        return databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER ||
+            databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER;
     }
 
     /**
@@ -538,6 +691,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public SELF withMySQLContainer(MySQLContainer mysqlContainer) {
         this.databaseConfig = NacosDatabaseConfig.mysqlContainer(mysqlContainer);
+        // Setup shared network for inter-container communication
+        setupNetworkForDatabaseContainer(mysqlContainer, "mysql");
         return self();
     }
 
@@ -564,6 +719,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public SELF withPostgreSQLContainer(PostgreSQLContainer postgresqlContainer) {
         this.databaseConfig = NacosDatabaseConfig.postgresqlContainer(postgresqlContainer);
+        // Setup shared network for inter-container communication
+        setupNetworkForDatabaseContainer(postgresqlContainer, "postgresql");
         return self();
     }
 
