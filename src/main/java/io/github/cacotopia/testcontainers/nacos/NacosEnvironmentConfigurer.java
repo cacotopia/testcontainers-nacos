@@ -35,20 +35,23 @@ public class NacosEnvironmentConfigurer {
     /**
      * Configures basic environment variables.
      *
-     * @param authEnabled       Whether authentication is enabled
-     * @param tokenExpiration   Token expiration time in seconds
-     * @param consoleEnabled    Whether the console is enabled
-     * @param namespace         The Nacos namespace
-     * @param authToken         The authentication token (if auth is enabled)
-     * @param authIdentityKey   The authentication identity key (if auth is enabled)
-     * @param authIdentityValue The authentication identity value (if auth is enabled)
-     * @param debug             Whether debug mode is enabled
+     * @param authEnabled        Whether authentication is enabled
+     * @param tokenExpiration    Token expiration time in seconds
+     * @param consoleAuthEnabled Whether the console authentication is enabled
+     * @param adminAuthEnabled   Whether the admin authentication is enabled
+     * @param consoleUiEnabled   Whether the console UI is enabled
+     * @param namespace          The Nacos namespace
+     * @param authToken          The authentication token (if auth is enabled)
+     * @param authIdentityKey    The authentication identity key (if auth is enabled)
+     * @param authIdentityValue  The authentication identity value (if auth is enabled)
+     * @param debug              Whether debug mode is enabled
      */
     public void configureBasicSettings(boolean debug,
                                        boolean authEnabled, String authToken,
+                                       boolean consoleAuthEnabled, boolean adminAuthEnabled,
                                        String authIdentityKey, String authIdentityValue,
                                        int tokenExpiration,
-                                       boolean consoleEnabled, String namespace) {
+                                       boolean consoleUiEnabled, String namespace) {
         // 认证配置（2.x 和 3.x 相同）
         withEnv(NacosConstant.NACOS_DEBUG, String.valueOf(debug));
         withEnv(NacosConstant.NACOS_AUTH_ENABLE, String.valueOf(authEnabled));
@@ -60,16 +63,13 @@ public class NacosEnvironmentConfigurer {
             withEnv(NacosConstant.NACOS_AUTH_IDENTITY_KEY, authIdentityKey);
             withEnv(NacosConstant.NACOS_AUTH_IDENTITY_VALUE, authIdentityValue);
         }
-
         // 控制台配置
         if (version.isV3()) {
             // Nacos 3.x 使用新的控制台配置
-            withEnv(NacosConstant.NACOS_CONSOLE_UI_ENABLED, String.valueOf(consoleEnabled));
-        } else {
-            // Nacos 2.x 控制台配置
-            withEnv(NacosConstant.NACOS_CONSOLE_UI_ENABLED, String.valueOf(consoleEnabled));
+            withEnv(NacosConstant.NACOS_AUTH_CONSOLE_ENABLE, String.valueOf(consoleAuthEnabled));
+            withEnv(NacosConstant.NACOS_AUTH_ADMIN_ENABLE, String.valueOf(adminAuthEnabled));
+            withEnv(NacosConstant.NACOS_CONSOLE_UI_ENABLED, String.valueOf(consoleUiEnabled));
         }
-
         // 命名空间配置
         if (namespace != null && !namespace.isEmpty()) {
             withEnv("NACOS_NAMESPACE", namespace);
@@ -100,7 +100,8 @@ public class NacosEnvironmentConfigurer {
             withEnv("spring.sql.init.platform", "");
         } else {
             // Nacos 2.x 使用 SPRING_DATASOURCE_PLATFORM
-            withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "embedded");
+            withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "");
+            withEnv(NacosConstant.EMBEDDED_STORAGE, "embedded");
             withEnv(NacosConstant.NACOS_AUTH_CACHE_ENABLE, "true");
         }
     }
@@ -120,13 +121,14 @@ public class NacosEnvironmentConfigurer {
             withEnv("db.password.0", databaseConfig.getPassword());
         } else {
             // Nacos 2.x 使用旧的数据库配置方式
+            // TODO 添加对 MySQL 的支持
             withEnv(NacosConstant.SPRING_DATASOURCE_PLATFORM, "mysql");
             withEnv(NacosConstant.MYSQL_SERVICE_HOST, databaseConfig.getHost());
             withEnv(NacosConstant.MYSQL_SERVICE_PORT, String.valueOf(databaseConfig.getPort()));
             withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
             withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
             withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getPassword());
+            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
 
             String url = databaseConfig.getUrl();
             if (url != null) {
@@ -156,7 +158,7 @@ public class NacosEnvironmentConfigurer {
             withEnv(NacosConstant.MYSQL_SERVICE_DB_NAME, databaseConfig.getDatabase());
             withEnv(NacosConstant.MYSQL_SERVICE_USER, databaseConfig.getUsername());
             withEnv(NacosConstant.MYSQL_SERVICE_PASSWORD, databaseConfig.getPassword());
-            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getPassword());
+            withEnv(NacosConstant.MYSQL_SERVICE_DB_PARAM, databaseConfig.getUrlParams());
             String url = databaseConfig.getUrl();
             if (url != null) {
                 withEnv("SPRING_DATASOURCE_URL", url);
@@ -178,7 +180,7 @@ public class NacosEnvironmentConfigurer {
                 withEnv("nacos.standalone", "false");
             } else {
                 // Nacos 2.x 使用 NACOS_MODE=cluster
-                withEnv(NacosConstant.MODE, "cluster");
+                withEnv(NacosConstant.MODE, NacosConstant.CLUSTER_MODE);
             }
 
             // 配置集群节点列表
@@ -201,7 +203,7 @@ public class NacosEnvironmentConfigurer {
                 if (version.isV3()) {
                     withEnv("nacos.server.ip", clusterNodeId);
                 } else {
-                    withEnv("NACOS_SERVER_IP", clusterNodeId);
+                    withEnv(NacosConstant.NACOS_SERVER_IP, clusterNodeId);
                 }
             }
         } else {
@@ -209,7 +211,7 @@ public class NacosEnvironmentConfigurer {
             if (version.isV3()) {
                 withEnv("nacos.standalone", "true");
             } else {
-                withEnv("NACOS_MODE", "standalone");
+                withEnv(NacosConstant.MODE, NacosConstant.STANDALONE_MODE);
             }
         }
     }

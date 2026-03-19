@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NacosPostgreSQLIntegrationTest {
 
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15")
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:14.22")
         .withDatabaseName("nacos")
         .withUsername("nacos")
         .withPassword("nacos");

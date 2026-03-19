@@ -11,32 +11,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 public class NacosDatabaseConfig {
 
     /**
-     * Database type enum
-     */
-    public enum DatabaseType {
-        /**
-         * Embedded database (default)
-         */
-        EMBEDDED,
-        /**
-         * Testcontainers MySQL container
-         */
-        MYSQL_CONTAINER,
-        /**
-         * External MySQL instance
-         */
-        EXTERNAL_MYSQL,
-        /**
-         * Testcontainers PostgreSQL container
-         */
-        POSTGRESQL_CONTAINER,
-        /**
-         * External PostgreSQL instance
-         */
-        EXTERNAL_POSTGRESQL
-    }
-
-    /**
      * Database type
      */
     private DatabaseType type = DatabaseType.EMBEDDED;
@@ -139,11 +113,7 @@ public class NacosDatabaseConfig {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
         config.type = DatabaseType.MYSQL_CONTAINER;
         config.mysqlContainer = mysqlContainer;
-        config.host = mysqlContainer.getHost();
-        config.port = mysqlContainer.getMappedPort(3306);
-        config.database = mysqlContainer.getDatabaseName();
-        config.username = mysqlContainer.getUsername();
-        config.password = mysqlContainer.getPassword();
+        // Port mapping is deferred until container is started
         return config;
     }
 
@@ -197,11 +167,7 @@ public class NacosDatabaseConfig {
         NacosDatabaseConfig config = new NacosDatabaseConfig();
         config.type = DatabaseType.POSTGRESQL_CONTAINER;
         config.postgresqlContainer = postgresqlContainer;
-        config.host = postgresqlContainer.getHost();
-        config.port = postgresqlContainer.getMappedPort(5432);
-        config.database = postgresqlContainer.getDatabaseName();
-        config.username = postgresqlContainer.getUsername();
-        config.password = postgresqlContainer.getPassword();
+        // Port mapping is deferred until container is started
         return config;
     }
 
@@ -238,6 +204,12 @@ public class NacosDatabaseConfig {
      * @return The MySQL host
      */
     public String getHost() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return mysqlContainer.getHost();
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return postgresqlContainer.getHost();
+        }
         return host;
     }
 
@@ -247,6 +219,12 @@ public class NacosDatabaseConfig {
      * @return The MySQL port
      */
     public Integer getPort() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return mysqlContainer.getMappedPort(3306);
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return postgresqlContainer.getMappedPort(5432);
+        }
         return port;
     }
 
@@ -256,6 +234,12 @@ public class NacosDatabaseConfig {
      * @return The database name
      */
     public String getDatabase() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return mysqlContainer.getDatabaseName();
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return postgresqlContainer.getDatabaseName();
+        }
         return database;
     }
 
@@ -265,6 +249,12 @@ public class NacosDatabaseConfig {
      * @return The MySQL username
      */
     public String getUsername() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return mysqlContainer.getUsername();
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return postgresqlContainer.getUsername();
+        }
         return username;
     }
 
@@ -274,6 +264,12 @@ public class NacosDatabaseConfig {
      * @return The MySQL password
      */
     public String getPassword() {
+        if (type == DatabaseType.MYSQL_CONTAINER && mysqlContainer != null) {
+            return mysqlContainer.getPassword();
+        }
+        if (type == DatabaseType.POSTGRESQL_CONTAINER && postgresqlContainer != null) {
+            return postgresqlContainer.getPassword();
+        }
         return password;
     }
 
@@ -300,10 +296,10 @@ public class NacosDatabaseConfig {
         }
         if (isPostgreSQL()) {
             return String.format("jdbc:postgresql://%s:%d/%s?currentSchema=nacos",
-                host, port, database);
+                getHost(), getPort(), getDatabase());
         }
-        return String.format("jdbc:mysql://%s:%d/%s?",
-            host, port, database);
+        return String.format("jdbc:mysql://%s:%d/%s?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai",
+            getHost(), getPort(), getDatabase());
     }
 
     /**

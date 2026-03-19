@@ -60,13 +60,13 @@ public class NacosCluster implements Startable {
     @Override
     public void start() {
 
-        if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER) {
+        if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER) {
             // 如果使用 MySQL 容器，先启动 MySQL
             MySQLContainer mysql = databaseConfig.getMysqlContainer();
             if (mysql != null && !mysql.isRunning()) {
                 mysql.start();
             }
-        } else if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER) {
+        } else if (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER) {
             // 如果使用 PostgreSQL 容器，先启动 PostgreSQL
             PostgreSQLContainer postgresql = databaseConfig.getPostgresqlContainer();
             if (postgresql != null && !postgresql.isRunning()) {
@@ -103,7 +103,7 @@ public class NacosCluster implements Startable {
         }
 
         // 如果使用 MySQL 容器，停止 MySQL
-        if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER) {
+        if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER) {
             MySQLContainer mysql = databaseConfig.getMysqlContainer();
             if (mysql != null && mysql.isRunning()) {
                 mysql.stop();

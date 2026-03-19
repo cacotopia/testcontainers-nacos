@@ -4,6 +4,9 @@ public class NacosConstant {
 
     public static final String NACOS_IMAGE = "nacos/nacos:2.2.3";
 
+    public static final String CLUSTER_MODE = "cluster";
+    public static final String STANDALONE_MODE = "standalone";
+
     public static final String MODE = "MODE";
     public static final String JVM_XMS = "JVM_XMS";
     public static final String JVM_XMX = "JVM_XMX";

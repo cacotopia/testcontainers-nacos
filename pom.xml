@@ -69,7 +69,7 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <testcontainers.version>2.0.2</testcontainers.version>
+        <testcontainers.version>2.0.3</testcontainers.version>
         <jackson.version>2.17.2</jackson.version>
         <jackson-annotations.version>2.17</jackson-annotations.version>
         <junit-jupiter.version>5.11.0</junit-jupiter.version>
@@ -82,6 +82,7 @@
         <datafaker.version>2.5.4</datafaker.version>
         <awaitility.version>4.3.0</awaitility.version>
         <assertj.version>3.21.0</assertj.version>
+        <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
         <docker-java-api.version>3.7.0</docker-java-api.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
@@ -180,6 +181,18 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>${mysql-connector-j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>

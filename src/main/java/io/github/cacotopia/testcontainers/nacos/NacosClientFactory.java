@@ -37,8 +37,8 @@ public class NacosClientFactory {
      * Creates a new NacosClientFactory with the specified server address, username, and password.
      *
      * @param serverAddr The Nacos server address
-     * @param username The Nacos username
-     * @param password The Nacos password
+     * @param username   The Nacos username
+     * @param password   The Nacos password
      */
     public NacosClientFactory(String serverAddr, String username, String password) {
         this(serverAddr, username, password, "");
@@ -48,9 +48,9 @@ public class NacosClientFactory {
      * Creates a new NacosClientFactory with the specified server address, username, password, and namespace.
      *
      * @param serverAddr The Nacos server address
-     * @param username The Nacos username
-     * @param password The Nacos password
-     * @param namespace The Nacos namespace
+     * @param username   The Nacos username
+     * @param password   The Nacos password
+     * @param namespace  The Nacos namespace
      */
     public NacosClientFactory(String serverAddr, String username, String password, String namespace) {
         this.serverAddr = serverAddr;

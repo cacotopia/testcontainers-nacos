@@ -134,7 +134,7 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     /**
      * Whether authentication is enabled
      */
-    private boolean authEnabled = true;
+    private boolean authEnabled = false;
 
     /**
      * Whether authentication Cache is enabled
@@ -151,13 +151,13 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      * Authentication Identity Key when  authentication is enabled
      * Must be set since Nacos  2.2.1 when  authentication is enabled
      */
-    private String authIdentityKey = "serverIdentity";
+    private String authIdentityKey = "";
 
     /**
      * Authentication Identity Value when  authentication is enabled
      * Must be set since Nacos  2.2.1 when  authentication is enabled
      */
-    private String authIdentityValue = "security";
+    private String authIdentityValue = "";
 
     /**
      * Token expiration time in seconds (default: 5 hours)
@@ -167,7 +167,17 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     /**
      * Whether console is enabled
      */
-    private boolean consoleEnabled = true;
+    private boolean consoleUiEnabled = true;
+
+    /**
+     * Whether Console API authentication is enabled
+     */
+    private boolean consoleAuthEnabled = true;
+
+    /**
+     * Whether Admin API authentication is enabled
+     */
+    private boolean adminAuthEnabled = true;
 
     /**
      * Whether metrics are enabled
@@ -218,10 +228,10 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
     @Override
     public void start() {
         if (databaseConfig != null && !databaseConfig.isEmbedded()) {
-            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
+            if (databaseConfig.getType() == DatabaseType.MYSQL_CONTAINER && databaseConfig.getMysqlContainer() != null) {
                 databaseConfig.getMysqlContainer().start();
             }
-            if (databaseConfig.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
+            if (databaseConfig.getType() == DatabaseType.POSTGRESQL_CONTAINER && databaseConfig.getPostgresqlContainer() != null) {
                 databaseConfig.getPostgresqlContainer().start();
             }
             try {
@@ -245,7 +255,7 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         NacosEnvironmentConfigurer configurer = new NacosEnvironmentConfigurer(nacosVersion, this);
 
         // 配置基础设置
-        configurer.configureBasicSettings(debugEnabled, authEnabled, authToken, authIdentityKey, authIdentityValue, tokenExpiration, consoleEnabled, namespace);
+        configurer.configureBasicSettings(debugEnabled, authEnabled, authToken, consoleAuthEnabled, adminAuthEnabled, authIdentityKey, authIdentityValue, tokenExpiration, consoleUiEnabled, namespace);
 
         // 配置数据库
         configurer.configureDatabase(databaseConfig);
@@ -340,6 +350,126 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
             logger().info("Registered Nacos service: {} - {}:{}",
                 instance.getServiceName(), instance.getIp(), instance.getPort());
         }
+    }
+
+    /**
+     * Enables or disables Nacos debug mode.
+     *
+     * @param enabled true to enable debug mode, false otherwise
+     * @return This container instance
+     */
+    public SELF withDebugEnabled(boolean enabled) {
+        this.debugEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Enables or disables authentication.
+     *
+     * @param enabled true to enable authentication, false otherwise
+     * @return This container instance
+     */
+    public SELF withAuthEnabled(boolean enabled) {
+        this.authEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Enables or disables authentication cache.
+     *
+     * @param enabled true to enable authentication cache, false otherwise
+     * @return This container instance
+     */
+    public SELF withAuthCacheEnabled(boolean enabled) {
+        this.authCacheEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Sets the authentication token when authentication is enabled.
+     *
+     * @param authToken The authentication token
+     * @return This container instance
+     */
+    public SELF withAuthToken(String authToken) {
+        this.authToken = authToken;
+        return self();
+    }
+
+    /**
+     * Enables or disables the Console API authentication.
+     *
+     * @param enabled true to enable the console, false otherwise
+     * @return This container instance
+     */
+    public SELF withAdminAuthEnabled(boolean enabled) {
+        this.adminAuthEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Enables or disables the Console API authentication.
+     *
+     * @param enabled true to enable the console, false otherwise
+     * @return This container instance
+     */
+    public SELF withConsoleAuthEnabled(boolean enabled) {
+        this.consoleAuthEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Sets the token expiration time in seconds.
+     *
+     * @param seconds The token expiration time in seconds
+     * @return This container instance
+     */
+    public SELF withTokenExpiration(int seconds) {
+        this.tokenExpiration = seconds;
+        return self();
+    }
+
+    /**
+     * Sets the authentication identity key when authentication is enabled.
+     *
+     * @param authIdentityKey The authentication identity key
+     * @return This container instance
+     */
+    public SELF withAuthIdentityKey(String authIdentityKey) {
+        this.authIdentityKey = authIdentityKey;
+        return self();
+    }
+
+    /**
+     * Sets the authentication identity value when authentication is enabled.
+     *
+     * @param authIdentityValue The authentication identity value
+     * @return This container instance
+     */
+    public SELF withAuthIdentityValue(String authIdentityValue) {
+        this.authIdentityValue = authIdentityValue;
+        return self();
+    }
+
+    /**
+     * Enables or disables the console UI.
+     *
+     * @param enabled true to enable the console, false otherwise
+     * @return This container instance
+     */
+    public SELF withConsoleUiEnabled(boolean enabled) {
+        this.consoleUiEnabled = enabled;
+        return self();
+    }
+
+    /**
+     * Enables metrics monitoring.
+     *
+     * @return This container instance
+     */
+    public SELF withMetricsEnabled() {
+        this.metricsEnabled = true;
+        return self();
     }
 
     /**
@@ -620,104 +750,6 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
         return self();
     }
 
-    /**
-     * Enables or disables Nacos debug mode.
-     *
-     * @param enabled true to enable debug mode, false otherwise
-     * @return This container instance
-     */
-    public SELF withDebugEnabled(boolean enabled) {
-        this.debugEnabled = enabled;
-        return self();
-    }
-
-    /**
-     * Enables or disables authentication.
-     *
-     * @param enabled true to enable authentication, false otherwise
-     * @return This container instance
-     */
-    public SELF withAuthEnabled(boolean enabled) {
-        this.authEnabled = enabled;
-        return self();
-    }
-
-    /**
-     * Enables or disables authentication cache.
-     *
-     * @param enabled true to enable authentication cache, false otherwise
-     * @return This container instance
-     */
-    public SELF withAuthCacheEnabled(boolean enabled) {
-        this.authCacheEnabled = enabled;
-        return self();
-    }
-
-    /**
-     * Sets the authentication token when authentication is enabled.
-     *
-     * @param authToken The authentication token
-     * @return This container instance
-     */
-    public SELF withAuthToken(String authToken) {
-        this.authToken = authToken;
-        return self();
-    }
-
-    /**
-     * Sets the token expiration time in seconds.
-     *
-     * @param seconds The token expiration time in seconds
-     * @return This container instance
-     */
-    public SELF withTokenExpiration(int seconds) {
-        this.tokenExpiration = seconds;
-        return self();
-    }
-
-    /**
-     * Sets the authentication identity key when authentication is enabled.
-     *
-     * @param authIdentityKey The authentication identity key
-     * @return This container instance
-     */
-    public SELF withAuthIdentityKey(String authIdentityKey) {
-        this.authIdentityKey = authIdentityKey;
-        return self();
-    }
-
-    /**
-     * Sets the authentication identity value when authentication is enabled.
-     *
-     * @param authIdentityValue The authentication identity value
-     * @return This container instance
-     */
-    public SELF withAuthIdentityValue(String authIdentityValue) {
-        this.authIdentityValue = authIdentityValue;
-        return self();
-    }
-
-    /**
-     * Enables or disables the console.
-     *
-     * @param enabled true to enable the console, false otherwise
-     * @return This container instance
-     */
-    public SELF withConsoleEnabled(boolean enabled) {
-        this.consoleEnabled = enabled;
-        return self();
-    }
-
-    /**
-     * Enables metrics monitoring.
-     *
-     * @return This container instance
-     */
-    public SELF withMetricsEnabled() {
-        this.metricsEnabled = true;
-        return self();
-    }
-
 
     /**
      * Gets the Nacos version.
@@ -884,8 +916,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      *
      * @return true if the console is enabled, false otherwise
      */
-    public boolean isConsoleEnabled() {
-        return consoleEnabled;
+    public boolean isConsoleUiEnabled() {
+        return consoleUiEnabled;
     }
 
     /**

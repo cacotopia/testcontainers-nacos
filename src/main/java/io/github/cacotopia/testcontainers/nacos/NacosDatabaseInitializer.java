@@ -51,7 +51,7 @@ public class NacosDatabaseInitializer {
      */
     private static void initializeMySQL(NacosDatabaseConfig config) throws SQLException, IOException {
         // Start MySQL container if it's not running
-        if (config.getType() == NacosDatabaseConfig.DatabaseType.MYSQL_CONTAINER) {
+        if (config.getType() == DatabaseType.MYSQL_CONTAINER) {
             MySQLContainer mysqlContainer = config.getMysqlContainer();
             if (mysqlContainer != null && !mysqlContainer.isRunning()) {
                 mysqlContainer.start();
@@ -74,7 +74,7 @@ public class NacosDatabaseInitializer {
      */
     private static void initializePostgreSQL(NacosDatabaseConfig config) throws SQLException, IOException {
         // Start PostgreSQL container if it's not running
-        if (config.getType() == NacosDatabaseConfig.DatabaseType.POSTGRESQL_CONTAINER) {
+        if (config.getType() == DatabaseType.POSTGRESQL_CONTAINER) {
             PostgreSQLContainer postgresqlContainer = config.getPostgresqlContainer();
             if (postgresqlContainer != null && !postgresqlContainer.isRunning()) {
                 postgresqlContainer.start();

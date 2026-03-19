@@ -15,13 +15,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class NacosMySQLIntegrationTest {
 
     @Container
-    static MySQLContainer mysql = new MySQLContainer("mysql:8.0")
+    static MySQLContainer mysql = new MySQLContainer("mysql:8.0.45")
         .withDatabaseName("nacos")
         .withUsername("nacos")
         .withPassword("nacos");
 
     @Container
     static NacosContainer nacos = new NacosContainer()
+        .withDebugEnabled(true)
         .withMySQLContainer(mysql);
 
     @Test
