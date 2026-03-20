@@ -17,12 +17,14 @@ class NacosMySQLContainerIntegrationTest {
     @Container
     static MySQLContainer mysql = new MySQLContainer("mysql:8.0.45")
         .withDatabaseName("nacos")
-        .withUsername("nacos")
-        .withPassword("nacos");
+        .withUsername("root")
+        .withPassword("123456");
 
     @Container
     static NacosContainer nacos = new NacosContainer()
         .withDebugEnabled(true)
+        .withUsername("admin")
+        .withPassword("admin123")
         .withMySQLContainer(mysql);
 
     @Test
@@ -44,8 +46,8 @@ class NacosMySQLContainerIntegrationTest {
         assertThat(dbConfig.getHost()).isNotNull();
         assertThat(dbConfig.getPort()).isGreaterThan(0);
         assertThat(dbConfig.getDatabase()).isEqualTo("nacos");
-        assertThat(dbConfig.getUsername()).isEqualTo("nacos");
-        assertThat(dbConfig.getPassword()).isEqualTo("nacos");
+        assertThat(dbConfig.getUsername()).isEqualTo("root");
+        assertThat(dbConfig.getPassword()).isEqualTo("123456");
     }
 
     @Test
@@ -59,6 +61,13 @@ class NacosMySQLContainerIntegrationTest {
             .startsWith("jdbc:mysql://")
             .contains("nacos")
             .contains("useSSL=false");
+    }
+
+    @Test
+    @DisplayName("容器应该成功启动并返回服务URL")
+    void shouldReturnCorrectNacosUserInfo() {
+        assertThat(nacos.getUsername()).isEqualTo("admin");
+        assertThat(nacos.getPassword()).isEqualTo("admin123");
     }
 
     @Test

@@ -3,9 +3,6 @@ DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 USE `nacos`;
 
-SET
-FOREIGN_KEY_CHECKS = 0;
-
 /******************************************/
 /*   表名称 = config_info                  */
 /******************************************/
@@ -180,14 +177,9 @@ CREATE TABLE `permissions`
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users`
-VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);
+INSERT INTO `users` VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);
 
 -- ----------------------------
 -- Records of roles
 -- ----------------------------
-INSERT INTO `roles`
-VALUES ('nacos', 'ROLE_ADMIN');
-
-SET
-FOREIGN_KEY_CHECKS = 1;
+INSERT INTO `roles` VALUES ('nacos', 'ROLE_ADMIN');

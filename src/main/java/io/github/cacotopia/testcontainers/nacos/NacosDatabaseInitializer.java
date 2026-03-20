@@ -104,7 +104,7 @@ public class NacosDatabaseInitializer {
         String schema = readResource(MYSQL_SCHEMA_RESOURCE);
 
         // Replace database name in schema
-        schema = schema.replace("USE `nacos`;", "USE `" + databaseName + ";");
+        schema = schema.replace("USE `nacos`;", "USE `" + databaseName + "`;");
 
         // Encrypt password
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
