@@ -82,7 +82,9 @@
         <datafaker.version>2.5.4</datafaker.version>
         <awaitility.version>4.3.0</awaitility.version>
         <assertj.version>3.21.0</assertj.version>
+        <spring-security.version>5.7.8</spring-security.version>
         <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
+        <postgresql.version>42.7.3</postgresql.version>
         <docker-java-api.version>3.7.0</docker-java-api.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
@@ -112,6 +114,11 @@
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
             <version>${nacos-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>${spring-security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
@@ -192,7 +199,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.3</version>
+            <version>${postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

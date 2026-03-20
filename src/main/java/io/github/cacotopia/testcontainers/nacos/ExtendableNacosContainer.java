@@ -253,8 +253,8 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
                 postgresqlContainer.start();
             }
             try {
-                // Initialize database schema
-                NacosDatabaseInitializer.initialize(databaseConfig);
+                // Initialize database schema with container credentials
+                NacosDatabaseInitializer.initialize(databaseConfig, this);
             } catch (SQLException | IOException e) {
                 throw new IllegalStateException("Failed to initialize database", e);
             }
@@ -665,6 +665,20 @@ public abstract class ExtendableNacosContainer<SELF extends ExtendableNacosConta
      */
     public SELF withDatabaseConfig(NacosDatabaseConfig databaseConfig) {
         this.databaseConfig = databaseConfig;
+        return self();
+    }
+
+    /**
+     * Sets the database initialization strategy.
+     *
+     * @param initStrategy The database initialization strategy
+     * @return This container instance for method chaining
+     */
+    public SELF withDatabaseInitStrategy(InitStrategy initStrategy) {
+        if (this.databaseConfig == null) {
+            this.databaseConfig = NacosDatabaseConfig.embedded();
+        }
+        this.databaseConfig.setInitStrategy(initStrategy);
         return self();
     }
 

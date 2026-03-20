@@ -15,6 +15,11 @@ public class NacosDatabaseConfig {
      */
     private DatabaseType type = DatabaseType.EMBEDDED;
 
+    /**
+     * Database initialization strategy
+     */
+    private InitStrategy initStrategy = InitStrategy.CREATE_IF_NOT_EXISTS;
+
     // MySQL connection configuration
     /**
      * MySQL host
@@ -189,7 +194,6 @@ public class NacosDatabaseConfig {
             .withDatabaseName(database)
             .withUsername(username)
             .withPassword(password);
-        // TODO: Set URL params
         return postgresqlContainer(postgresql);
     }
 
@@ -360,6 +364,24 @@ public class NacosDatabaseConfig {
     }
 
     /**
+     * Sets the database initialization strategy.
+     *
+     * @param initStrategy The database initialization strategy
+     */
+    public void setInitStrategy(InitStrategy initStrategy) {
+        this.initStrategy = initStrategy;
+    }
+    
+    /**
+     * Gets the database initialization strategy.
+     *
+     * @return The database initialization strategy
+     */
+    public InitStrategy getInitStrategy() {
+        return initStrategy;
+    }
+
+    /**
      * Gets the MySQL container instance.
      *
      * @return The MySQL container instance, or null if not using MySQL container
@@ -417,6 +439,9 @@ public class NacosDatabaseConfig {
             ", port=" + port +
             ", database='" + database + '\'' +
             ", username='" + username + '\'' +
+            ", initStrategy=" + initStrategy +
             '}';
     }
+
+
 }

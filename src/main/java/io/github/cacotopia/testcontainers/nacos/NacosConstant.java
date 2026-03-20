@@ -11,6 +11,16 @@ public class NacosConstant {
     public static final String NACOS_IMAGE = "nacos/nacos:2.2.3";
 
     /**
+     * nacos image
+     */
+    public static final String DEFAULT_NACOS_USERNAME = "nacos";
+
+    /**
+     * nacos image
+     */
+    public static final String DEFAULT_NACOS_PASSWORD = "nacos";
+
+    /**
      * nacos mode
      */
     public static final String CLUSTER_MODE = "cluster";

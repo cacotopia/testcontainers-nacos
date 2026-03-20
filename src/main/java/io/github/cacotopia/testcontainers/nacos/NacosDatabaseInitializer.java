@@ -1,5 +1,6 @@
 package io.github.cacotopia.testcontainers.nacos;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
@@ -25,31 +26,44 @@ public class NacosDatabaseInitializer {
     /**
      * Initializes the database schema for Nacos.
      *
-     * @param config The database configuration
+     * @param config    The database configuration
+     * @param container The Nacos container instance
      * @throws SQLException If an SQL error occurs
-     * @throws IOException If an I/O error occurs
+     * @throws IOException  If an I/O error occurs
      */
-    public static void initialize(NacosDatabaseConfig config) throws SQLException, IOException {
+    public static void initialize(NacosDatabaseConfig config, ExtendableNacosContainer<?> container) throws SQLException, IOException {
         if (config.isEmbedded()) {
             // Embedded database doesn't need initialization
             return;
         }
 
         if (config.isMySQL()) {
-            initializeMySQL(config);
+            initializeMySQL(config, container);
         } else if (config.isPostgreSQL()) {
-            initializePostgreSQL(config);
+            initializePostgreSQL(config, container);
         }
+    }
+
+    /**
+     * Initializes the database schema for Nacos (backward compatibility).
+     *
+     * @param config The database configuration
+     * @throws SQLException If an SQL error occurs
+     * @throws IOException  If an I/O error occurs
+     */
+    public static void initialize(NacosDatabaseConfig config) throws SQLException, IOException {
+        initialize(config, null);
     }
 
     /**
      * Initializes MySQL database schema for Nacos.
      *
-     * @param config The database configuration
+     * @param config    The database configuration
+     * @param container The Nacos container instance
      * @throws SQLException If an SQL error occurs
-     * @throws IOException If an I/O error occurs
+     * @throws IOException  If an I/O error occurs
      */
-    private static void initializeMySQL(NacosDatabaseConfig config) throws SQLException, IOException {
+    private static void initializeMySQL(NacosDatabaseConfig config, ExtendableNacosContainer<?> container) throws SQLException, IOException {
         // Start MySQL container if it's not running
         if (config.getType() == DatabaseType.MYSQL_CONTAINER) {
             MySQLContainer mysqlContainer = config.getMysqlContainer();
@@ -58,21 +72,63 @@ public class NacosDatabaseInitializer {
             }
         }
 
+        // Get Nacos username and password from container if provided
+        String nacosUsername = NacosConstant.DEFAULT_NACOS_USERNAME;
+        String nacosPassword = NacosConstant.DEFAULT_NACOS_PASSWORD;
+        if (container != null) {
+            nacosUsername = container.getUsername();
+            nacosPassword = container.getPassword();
+        }
+
+        // Create database based on initialization strategy
+        String databaseName = config.getDatabase();
+        String rootUrl = config.getUrl().replace("/" + databaseName, "");
+        String rootUsername = config.getUsername();
+        String rootPassword = config.getPassword();
+
+        // Handle database initialization based on strategy
+        InitStrategy initStrategy = config.getInitStrategy();
+        if (initStrategy != InitStrategy.SKIP_INITIALIZATION) {
+            try (Connection connection = DriverManager.getConnection(rootUrl, rootUsername, rootPassword);
+                 Statement statement = connection.createStatement()) {
+                if (initStrategy == InitStrategy.ALWAYS_RECREATE) {
+                    // Drop database if it exists
+                    statement.execute("DROP DATABASE IF EXISTS `" + databaseName + "`;");
+                }
+                // Create database
+                statement.execute("CREATE DATABASE IF NOT EXISTS `" + databaseName + "` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+            }
+        }
+
         // Read MySQL schema
         String schema = readResource(MYSQL_SCHEMA_RESOURCE);
 
+        // Replace database name in schema
+        schema = schema.replace("USE `nacos`;", "USE `" + databaseName + ";");
+
+        // Encrypt password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encryptedPassword = encoder.encode(nacosPassword);
+
+        // Replace default username and password in schema
+        schema = schema.replace("INSERT INTO `users` VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);",
+            "INSERT INTO `users` VALUES ('" + nacosUsername + "', '" + encryptedPassword + "', TRUE);");
+        schema = schema.replace("INSERT INTO `roles` VALUES ('nacos', 'ROLE_ADMIN');",
+            "INSERT INTO `roles` VALUES ('" + nacosUsername + "', 'ROLE_ADMIN');");
+
         // Execute schema
-        executeSql(config.getUrl(), config.getUsername(), config.getPassword(), schema);
+        executeSql(rootUrl, rootUsername, rootPassword, schema);
     }
 
     /**
      * Initializes PostgreSQL database schema for Nacos.
      *
-     * @param config The database configuration
+     * @param config    The database configuration
+     * @param container The Nacos container instance
      * @throws SQLException If an SQL error occurs
-     * @throws IOException If an I/O error occurs
+     * @throws IOException  If an I/O error occurs
      */
-    private static void initializePostgreSQL(NacosDatabaseConfig config) throws SQLException, IOException {
+    private static void initializePostgreSQL(NacosDatabaseConfig config, ExtendableNacosContainer<?> container) throws SQLException, IOException {
         // Start PostgreSQL container if it's not running
         if (config.getType() == DatabaseType.POSTGRESQL_CONTAINER) {
             PostgreSQLContainer postgresqlContainer = config.getPostgresqlContainer();
@@ -81,11 +137,54 @@ public class NacosDatabaseInitializer {
             }
         }
 
+        // Get Nacos username and password from container if provided
+        String nacosUsername = NacosConstant.DEFAULT_NACOS_USERNAME;
+        String nacosPassword = NacosConstant.DEFAULT_NACOS_PASSWORD;
+        if (container != null) {
+            nacosUsername = container.getUsername();
+            nacosPassword = container.getPassword();
+        }
+
+        // Create database based on initialization strategy
+        String databaseName = config.getDatabase();
+        String rootUrl = config.getUrl().replace("/" + databaseName, "") + "/postgres";
+        String rootUsername = config.getUsername();
+        String rootPassword = config.getPassword();
+
+        // Handle database initialization based on strategy
+        InitStrategy initStrategy = config.getInitStrategy();
+        if (initStrategy != InitStrategy.SKIP_INITIALIZATION) {
+            try (Connection connection = DriverManager.getConnection(rootUrl, rootUsername, rootPassword);
+                 Statement statement = connection.createStatement()) {
+                if (initStrategy == InitStrategy.ALWAYS_RECREATE) {
+                    // Drop database if it exists
+                    statement.execute("DROP DATABASE IF EXISTS " + databaseName + ";");
+                }
+                // Create database
+                statement.execute("CREATE DATABASE " + databaseName + " WITH ENCODING 'UTF8';");
+            } catch (SQLException e) {
+                // Ignore if database already exists (only for CREATE_IF_NOT_EXISTS strategy)
+                if (initStrategy != InitStrategy.CREATE_IF_NOT_EXISTS || !e.getMessage().contains("already exists")) {
+                    throw e;
+                }
+            }
+        }
+
         // Read PostgreSQL schema
         String schema = readResource(POSTGRESQL_SCHEMA_RESOURCE);
 
+        // Encrypt password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encryptedPassword = encoder.encode(nacosPassword);
+
+        // Replace default username and password in schema
+        schema = schema.replace("INSERT INTO users (username, password, enabled) VALUES ('nacos', '$2a$10$EuWPZHzz32dJN7jexM34MOeYirDdFAZm2kuWj7VEOJhhZkDrxfvUu', TRUE);",
+            "INSERT INTO users (username, password, enabled) VALUES ('" + nacosUsername + "', '" + encryptedPassword + "', TRUE);");
+        schema = schema.replace("INSERT INTO roles (username, role) VALUES ('nacos', 'ROLE_ADMIN');",
+            "INSERT INTO roles (username, role) VALUES ('" + nacosUsername + "', 'ROLE_ADMIN');");
+
         // Execute schema
-        executeSql(config.getUrl(), config.getUsername(), config.getPassword(), schema);
+        executeSql(config.getUrl(), rootUsername, rootPassword, schema);
     }
 
     /**
