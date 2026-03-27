@@ -81,7 +81,7 @@
         <slf4j.version>2.0.17</slf4j.version>
         <datafaker.version>2.5.4</datafaker.version>
         <awaitility.version>4.3.0</awaitility.version>
-        <assertj.version>3.21.0</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <spring-security.version>5.7.8</spring-security.version>
         <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
         <postgresql.version>42.7.3</postgresql.version>
